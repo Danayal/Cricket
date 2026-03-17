@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Cricket Manager 2026 Pro</title>
+<script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060a10;--card:rgba(17,24,39,0.5);--card2:rgba(15,25,35,0.6);--border:rgba(55,65,81,0.2);--win:#22c55e;--lose:#ef4444;--gold:#fbbf24}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Quicksand',sans-serif;background:var(--bg);color:#e2e8f0;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.gf{font-family:'Oswald',sans-serif}
+.hide-sb::-webkit-scrollbar{display:none}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes glow-pulse{0%,100%{box-shadow:0 0 5px currentColor}50%{box-shadow:0 0 25px currentColor}}
+@keyframes slide-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes pulse-ring{0%{transform:scale(1);opacity:0.6}100%{transform:scale(2.5);opacity:0}}
+@keyframes ball-fly{0%{transform:translate(0,0) scale(1);opacity:1}50%{transform:translate(var(--bx,40px),var(--by,-60px)) scale(0.7)}100%{transform:translate(var(--bex,80px),var(--bey,-20px)) scale(0.4);opacity:0.6}}
+.slide-up{animation:slide-up 0.4s ease}
+.float-anim{animation:float 3s ease-in-out infinite}
+select{background-image:none!important;-webkit-appearance:none}
+input,select,button{font-family:'Quicksand',sans-serif}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+window.storage={async get(k){try{const v=localStorage.getItem(k);return v?{value:v}:null}catch{return null}},async set(k,v){try{localStorage.setItem(k,v);return true}catch{return false}}};
+</script>
+<script type="text/babel">

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/danay -path *OneDrive* -prune -o -name *cricket* -type f)",
+      "Bash(unzip -l files.zip)",
+      "Read(//c/tmp/**)",
+      "Bash(unzip -q /c/Users/danay/OneDrive/Documents/Code/Claude/files.zip)",
+      "Bash(ls -la /tmp/*.jsx)",
+      "Bash(find /c/Users/danay/OneDrive/Documents/Code -name *cricket* -o -name *Cricket*)",
+      "Bash(find /c/Users/danay -name *cricket-manager* -type f)",
+      "Bash(python -c \"print\\(''hello''\\)\")",
+      "Bash(node -e \"require\\(''fs''\\).writeFileSync\\(''/c/Users/danay/OneDrive/Documents/Code/Cricket/test.txt'',''hello''\\);console.log\\(''OK''\\)\")",
+      "Bash(\"/c/Users/danay/OneDrive/Documents/Code/Cricket/test.txt\")"
+    ]
+  }
+}
