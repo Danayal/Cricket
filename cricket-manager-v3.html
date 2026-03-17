@@ -356,3 +356,756 @@ function simPS(p,won){const isBat=p.role==="Batsman"||p.role==="WK-Batsman"||p.r
 /* === SAVE/LOAD === */
 async function saveG(s){try{await window.storage.set("cm10",JSON.stringify(s));return true}catch{return false}}
 async function loadG(){try{const r=await window.storage.get("cm10");return r?JSON.parse(r.value):null}catch{return null}}
+
+/* === COMMENTARY SYSTEM === */
+const COMM={
+dot:["Defended solidly.","Dot ball, good length.","Blocked back to the bowler.","No run, watchful batting.","Pushed to the fielder, no run.","Good line, well defended.","Beaten! Just past the edge.","Leaves it alone outside off.","Tight bowling, no room to score.","Dead bat, solid defence."],
+s1:["Pushed into the gap for a single.","Quick single, good running.","Turned to the leg side for one.","Nudged off the pads, easy single.","Dabbed to third man for one.","Worked to midwicket for a single.","Tapped and they scamper through for one.","Rotates the strike with a single."],
+s2:["Good running between the wickets! Two runs.","Placed into the gap, come back for two.","Driven wide of mid-off, easy two.","Pulled away, they take a comfortable two.","Flicked through midwicket for a couple."],
+s3:["Brilliant running! Three taken.","Mishit falls in no-mans land, they come back for three!","Driven to the deep, good running gets three."],
+s4:["FOUR! Crashing boundary!","Glorious cover drive, races to the fence!","FOUR! Smashed through the gap!","Pulled with authority, four runs!","Cut away, beats the fielder, FOUR!","FOUR! Beautiful timing, that raced away!","Edges past the keeper, four runs!","Sweetly driven, the ball flies to the boundary!","FOUR! Punched through the covers!","Swept fine, that beats the man, FOUR!","A delightful flick off the pads, FOUR!","Driven on the up, pierces the field, FOUR!"],
+s6:["SIX! Launched into the stands!","MASSIVE SIX! That has gone miles!","SIX! Over long-on, incredible power!","Scooped over fine leg for SIX!","SIX! Deposited into the crowd!","Steps out and smashes it for SIX!","Reverse swept for SIX! Audacious!","SIX! Down the ground, what a hit!","Pulled into the stands, SIX!","Picked up off the pads and launched for SIX!"],
+wC:["CAUGHT! The fielder takes a good catch!","Gone! Caught at {pos}!","Edged and taken! Great catch!","Skied it! Simple catch, OUT!","Top edge, safely pouched! Wicket!","Caught in the deep! He went for one too many.","TAKEN! What a grab in the slips!","Caught behind! The keeper dives and takes it!"],
+wB:["BOWLED! The stumps are shattered!","Clean bowled! Right through the gate!","BOWLED HIM! What a delivery!","The off stump is pegged back! Bowled!","Middle stump goes cartwheeling! Brilliant!","Played all around it, BOWLED!"],
+wL:["LBW! Stone dead, plumb in front!","Given! LBW, trapped on the crease!","Huge appeal... and the finger goes up! LBW!","LBW! That was crashing into middle stump!","Struck on the pads, UP GOES THE FINGER!"],
+wS:["STUMPED! Quick work by the keeper!","Stumped! Beaten in the flight and out of the crease!","The keeper whips off the bails! Stumped!"],
+wCB:["Caught and bowled! Brilliant reaction catch!","C&B! The bowler takes a return catch!"],
+wRO:["RUN OUT! Direct hit at the stumps!","Run out! Brilliant fielding!","RUN OUT! Hesitation and they pay the price!"],
+wd:["Wide ball signalled.","Called wide, too far outside off.","Down the leg side, wide."],
+nb:["No ball! Overstepping.","Free hit coming! No ball called."],
+m50:["FIFTY! Well-deserved half-century! The crowd rises!","50 up! A fine knock, take a bow!","Half-century! Quality batting on display!"],
+m100:["CENTURY! What an innings! Standing ovation!","A HUNDRED! Magnificent batting!","100 up! A truly special innings!"],
+pship:["Partnership building nicely here.","These two are rotating the strike well.","The partnership is worth {runs} now.","Excellent partnership, putting the pressure back."],
+bigOv:["12 off the over! The pressure is on!","A costly over, the bowler will want to forget that!","Big over! The momentum has shifted!"],
+tightOv:["Excellent over, just {runs} from it.","Tight bowling, only {runs} conceded.","Disciplined stuff, {runs} off the over."],
+chase:["Required rate climbing here.","They need {need} from {balls} balls.","This is getting tense! {need} needed.","The equation favors the batting side now.","Pressure on the bowlers with this required rate."]
+};
+const commFor=(type,extra)=>{const pool=COMM[type];if(!pool)return"";let txt=rng.p(pool);if(extra){Object.keys(extra).forEach(k=>{txt=txt.split("{"+k+"}").join(extra[k])})}return txt};
+
+/* === SVG ICONS === */
+const Ico=({type,sz=16,cl="#e2e8f0"})=>{
+  const p={bat:<svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={cl} strokeWidth="2"><path d="M3 21l7-7m0 0l4-4m-4 4l-2-2m6-2l4-4a2 2 0 00-3-3l-4 4"/></svg>,
+    ball:<svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={cl} strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M6 12c0-3.3 2.7-6 6-6m6 6c0 3.3-2.7 6-6 6"/></svg>,
+    trophy:<svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={cl} strokeWidth="2"><path d="M6 9H4a2 2 0 01-2-2V5a2 2 0 012-2h2m12 6h2a2 2 0 002-2V5a2 2 0 00-2-2h-2M9 21h6m-3-4v4M6 3h12v6a6 6 0 01-12 0V3z"/></svg>,
+    shield:<svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={cl} strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+    star:<svg width={sz} height={sz} viewBox="0 0 24 24" fill={cl} stroke={cl} strokeWidth="1"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+    arrow:<svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={cl} strokeWidth="2"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>,
+    play:<svg width={sz} height={sz} viewBox="0 0 24 24" fill={cl}><path d="M8 5v14l11-7z"/></svg>,
+    ff:<svg width={sz} height={sz} viewBox="0 0 24 24" fill={cl}><path d="M3 5v14l8-7zm10 0v14l8-7z"/></svg>,
+    skip:<svg width={sz} height={sz} viewBox="0 0 24 24" fill={cl}><path d="M2 5v14l7-7zm9 0v14l7-7zM18 5h2v14h-2z"/></svg>,
+    chart:<svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke={cl} strokeWidth="2"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+  };
+  return p[type]||null;
+};
+
+/* === SHARED UI COMPONENTS === */
+const Btn=({children,onClick,cl:color="#3b82f6",sz="md",disabled,full,className=""})=>{
+  const sizes={sm:"px-3 py-1 text-xs",md:"px-5 py-2 text-sm",lg:"px-8 py-3 text-base"};
+  return <button onClick={onClick} disabled={disabled} className={"rounded-lg font-semibold transition-all duration-200 "+sizes[sz]+(full?" w-full":"")+(disabled?" opacity-40 cursor-not-allowed":" hover:scale-105 hover:brightness-110 active:scale-95")+" "+className} style={{background:color,color:"#fff",border:"1px solid rgba(255,255,255,0.1)",boxShadow:"0 2px 10px "+color+"40"}}>{children}</button>};
+
+const Card=({children,className="",glow,onClick,style={}})=>
+  <div onClick={onClick} className={"rounded-xl p-4 backdrop-blur-sm border transition-all duration-300 "+(onClick?"cursor-pointer hover:scale-[1.02] ":"")+(glow?"border-opacity-50 ":"border-gray-700/30 ")+className} style={{background:"var(--card)",borderColor:glow||"rgba(55,65,81,0.3)",...style}}>{children}</div>;
+
+const Modal=({children,onClose,title,wide})=>
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{background:"rgba(0,0,0,0.8)"}} onClick={onClose}>
+    <div className={"bg-gray-900 rounded-2xl border border-gray-700/50 max-h-[90vh] overflow-y-auto hide-sb slide-up "+(wide?"w-full max-w-4xl":"w-full max-w-lg")} onClick={e=>e.stopPropagation()}>
+      {title&&<div className="flex items-center justify-between p-4 border-b border-gray-700/30"><h2 className="text-lg font-bold gf">{title}</h2><button onClick={onClose} className="text-gray-400 hover:text-white text-xl">&times;</button></div>}
+      <div className="p-4">{children}</div>
+    </div></div>;
+
+const Bar=({val,max=100,cl:color="#3b82f6",h=6,label})=>
+  <div className="w-full"><div className="flex justify-between text-xs mb-1">{label&&<span className="text-gray-400">{label}</span>}<span style={{color}}>{val}</span></div>
+    <div className="w-full rounded-full overflow-hidden" style={{height:h,background:"rgba(55,65,81,0.5)"}}>
+      <div className="h-full rounded-full transition-all duration-500" style={{width:Math.min(100,val/max*100)+"%",background:color}}/></div></div>;
+
+const Badge=({text,cl:color="#3b82f6",small})=>
+  <span className={"rounded-full font-semibold inline-block "+(small?"px-2 py-0.5 text-[10px]":"px-3 py-1 text-xs")} style={{background:color+"22",color,border:"1px solid "+color+"44"}}>{text}</span>;
+
+const Tabs=({tabs,active,onChange})=>
+  <div className="flex gap-1 p-1 rounded-xl overflow-x-auto hide-sb" style={{background:"rgba(17,24,39,0.8)"}}>
+    {tabs.map(t=><button key={t.id} onClick={()=>onChange(t.id)} className={"px-3 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap "+(active===t.id?"text-white":"text-gray-400 hover:text-gray-200")} style={active===t.id?{background:"rgba(59,130,246,0.3)",boxShadow:"0 0 10px rgba(59,130,246,0.2)"}:{}}>{t.icon&&<span className="mr-1">{t.icon}</span>}{t.label}</button>)}</div>;
+
+const OvrBadge=({ov,sz=32})=>{const t=ti(ov);return <div className="flex items-center justify-center rounded-full font-bold gf" style={{width:sz,height:sz,background:t.bg,color:t.c,border:"2px solid "+t.c+"66",fontSize:sz*0.4}}>{ov}</div>};
+
+const PlayerRow=({p,onClick,compact,showClub,clubMap})=>{
+  const t=ti(p.ov);
+  return <div onClick={onClick} className={"flex items-center gap-3 p-2 rounded-lg transition-all cursor-pointer hover:bg-white/5 "+(compact?"":"border border-gray-700/20")}>
+    <Face3D p={p} sz={compact?32:40}/>
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2"><span className="font-semibold text-sm truncate">{p.name}</span>{p.nick&&<span className="text-[10px] text-yellow-400">"{p.nick}"</span>}</div>
+      <div className="flex items-center gap-2 text-xs text-gray-400"><span>{ri(p.role)}</span><span>{p.role}</span>{p.age&&<span>Age {p.age}</span>}{showClub&&clubMap&&clubMap[p.club]&&<span className="text-[10px]">{clubMap[p.club]}</span>}</div>
+    </div>
+    <OvrBadge ov={p.ov} sz={compact?28:32}/>
+  </div>};
+
+const SkillBar=({label,val,color})=><div className="flex items-center gap-2 text-xs"><span className="w-16 text-gray-400 text-right">{label}</span><div className="flex-1 h-1.5 rounded-full" style={{background:"rgba(55,65,81,0.5)"}}><div className="h-full rounded-full" style={{width:val+"%",background:color||ti(val).c}}/></div><span className="w-6 text-right" style={{color:ti(val).c}}>{val}</span></div>;
+
+const PlayerProfile=({p,onClose})=>{
+  if(!p)return null;
+  const t=ti(p.ov);const isPc=["Fast","Fast-Medium","Express","Medium-Fast","Medium","Swing"].includes(p.bowlStyle);
+  const batArch=getBatArch(p);const bowlArch=getBowlArch(p);
+  const ms=p.ms||{};const avgR=ms.m>0?(ms.r/ms.m).toFixed(1):"0";const sr=ms.bf>0?(ms.r/ms.bf*100).toFixed(0):"0";const eco=ms.bb>0?(ms.rc/(ms.bb/6)).toFixed(1):"0";
+  return <Modal onClose={onClose} title={p.name} wide>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <div className="flex items-center gap-4 mb-4">
+          <Face3D p={p} sz={80}/>
+          <div><div className="flex items-center gap-2"><span className="text-2xl font-bold gf" style={{color:t.c}}>{p.ov}</span><Badge text={p.role} cl={t.c}/></div>
+            {p.nick&&<div className="text-yellow-400 text-sm mt-1">"{p.nick}"</div>}
+            <div className="text-xs text-gray-400 mt-1">{p.arm}-arm {p.bowlStyle||"Batsman"} | Age {p.age} | {p.trait}</div>
+            {batArch&&<Badge text={batArch} cl="#22c55e" small/>} {bowlArch&&<Badge text={bowlArch} cl="#8b5cf6" small/>}
+          </div>
+        </div>
+        <div className="text-xs text-gray-400 italic mb-4">{p.bio}</div>
+        <h3 className="text-sm font-bold mb-2 gf text-blue-400">Core Stats</h3>
+        <div className="space-y-1.5"><SkillBar label="Batting" val={p.bat}/><SkillBar label="Bowling" val={p.bowl}/><SkillBar label="Fielding" val={p.fld}/><SkillBar label="Fitness" val={p.fit}/><SkillBar label="Temper" val={p.tmp}/></div>
+        <h3 className="text-sm font-bold mt-4 mb-2 gf text-green-400">Batting Skills</h3>
+        <div className="space-y-1">{p.bsk&&Object.entries(p.bsk).map(([k,v])=><SkillBar key={k} label={k} val={v}/>)}</div>
+        <h3 className="text-sm font-bold mt-4 mb-2 gf text-purple-400">Bowling Skills</h3>
+        <div className="space-y-1">{p.wsk&&Object.entries(p.wsk).map(([k,v])=><SkillBar key={k} label={k} val={v}/>)}</div>
+      </div>
+      <div>
+        <h3 className="text-sm font-bold mb-2 gf text-yellow-400">Season Stats</h3>
+        <div className="grid grid-cols-3 gap-2 mb-4">{[["Matches",ms.m||0],["Runs",ms.r||0],["Wkts",ms.w||0],["HS",ms.hs||0],["Best",ms.bw||"0/0"],["4s",ms.f4||0],["6s",ms.s6||0],["Avg",avgR],["SR",sr],["Econ",eco]].map(([l,v])=><div key={l} className="text-center p-2 rounded-lg" style={{background:"var(--card2)"}}><div className="text-xs text-gray-400">{l}</div><div className="font-bold text-sm">{v}</div></div>)}</div>
+        {p.career&&<><h3 className="text-sm font-bold mb-2 gf text-cyan-400">Career</h3>
+        <div className="grid grid-cols-3 gap-2 mb-4">{[["Matches",p.career.matches],["Runs",p.career.runs],["Wkts",p.career.wkts],["HS",p.career.hs],["Best",p.career.best],["Avg",p.career.avg],["SR",p.career.sr],["Econ",p.career.eco]].map(([l,v])=><div key={l} className="text-center p-2 rounded-lg" style={{background:"var(--card2)"}}><div className="text-xs text-gray-400">{l}</div><div className="font-bold text-sm">{v||0}</div></div>)}</div></>}
+        <h3 className="text-sm font-bold mb-2 gf text-pink-400">Personality</h3>
+        <div className="space-y-1.5"><SkillBar label="Form" val={p.form} color="#22c55e"/><SkillBar label="Morale" val={p.mor} color="#3b82f6"/><SkillBar label="Confid." val={p.conf} color="#f59e0b"/><SkillBar label="Happy" val={p.hap} color="#ec4899"/><SkillBar label="Lead" val={p.lead} color="#8b5cf6"/></div>
+        <div className="mt-3 flex gap-2 flex-wrap"><Badge text={"Clique: "+p.clique} cl="#6b7280"/><Badge text={"Loyalty: "+p.loyal} cl="#6b7280"/><Badge text={"Potential: "+p.pot} cl="#fbbf24"/>{p.inj>0&&<Badge text={"Injured: "+p.inj+" matches"} cl="#ef4444"/>}</div>
+        {ms.ratings&&ms.ratings.length>0&&<><h3 className="text-sm font-bold mt-4 mb-2 gf text-orange-400">Recent Form</h3>
+        <div className="flex gap-1 items-end h-12">{ms.ratings.map((r,i)=><div key={i} className="flex-1 rounded-t" style={{height:r*10+"%",background:r>=7?"#22c55e":r>=5?"#3b82f6":"#ef4444",minWidth:4}}/>)}</div></>}
+      </div>
+    </div></Modal>};
+
+/* === TITLE & SETUP SCREENS === */
+const TitleScreen=({onNew,onLoad,canLoad})=>
+  <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="absolute inset-0" style={{background:"radial-gradient(ellipse at 50% 30%, rgba(59,130,246,0.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, rgba(139,92,246,0.1) 0%, transparent 50%)"}}/>
+    <div className="relative z-10 text-center slide-up">
+      <div className="mb-2 text-6xl">&#x1F3CF;</div>
+      <h1 className="text-5xl md:text-7xl font-bold gf mb-2" style={{background:"linear-gradient(135deg,#3b82f6,#8b5cf6,#ec4899)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>CRICKET</h1>
+      <h2 className="text-3xl md:text-4xl font-bold gf text-white mb-1">MANAGER 2026</h2>
+      <div className="text-sm text-gray-400 mb-8 tracking-widest">PRO EDITION</div>
+      <div className="flex flex-col gap-3 w-64 mx-auto">
+        <Btn onClick={onNew} cl="#3b82f6" sz="lg" full>New Career</Btn>
+        {canLoad&&<Btn onClick={onLoad} cl="#6b7280" sz="lg" full>Continue Career</Btn>}
+      </div>
+      <div className="mt-8 text-xs text-gray-500">8 Countries &bull; 48 Clubs &bull; Full Season Mode</div>
+      <div className="mt-2 text-xs text-gray-600">v3.0</div>
+    </div>
+    <div className="absolute bottom-0 left-0 right-0 h-32" style={{background:"linear-gradient(to top, var(--bg), transparent)"}}/>
+  </div>;
+
+const CountrySelect=({onSelect})=>
+  <div className="min-h-screen p-6 flex flex-col items-center justify-center">
+    <h1 className="text-3xl font-bold gf mb-2 text-center slide-up">Choose Your Country</h1>
+    <p className="text-gray-400 text-sm mb-6 text-center">Select a league to manage in</p>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl w-full">
+      {COUNTRIES.map((c,i)=><Card key={c.id} onClick={()=>onSelect(c.id)} glow="rgba(59,130,246,0.3)" className="text-center hover:border-blue-500/50 slide-up" style={{animationDelay:i*0.05+"s"}}>
+        <div className="text-4xl mb-2">{c.flag}</div>
+        <div className="font-bold text-sm">{c.name}</div>
+        <div className="text-xs text-gray-400">{c.league}</div>
+        <div className="text-[10px] text-gray-500 mt-1">{c.clubs.length} clubs</div>
+      </Card>)}
+    </div>
+  </div>;
+
+const ClubSelect=({country,onSelect,onBack})=>{
+  const c=COUNTRIES.find(x=>x.id===country);if(!c)return null;
+  return <div className="min-h-screen p-6 flex flex-col items-center justify-center">
+    <button onClick={onBack} className="self-start text-gray-400 hover:text-white text-sm mb-4">&larr; Back</button>
+    <h1 className="text-3xl font-bold gf mb-1 text-center">{c.flag} {c.league}</h1>
+    <p className="text-gray-400 text-sm mb-6 text-center">Choose your club</p>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-w-4xl w-full">
+      {c.clubs.map((club,i)=><Card key={club.id} onClick={()=>onSelect(club.id)} className="hover:scale-[1.03] slide-up" style={{animationDelay:i*0.05+"s",borderColor:club.cl+"44"}}>
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold gf" style={{background:club.cl+"22",color:club.cl,border:"2px solid "+club.cl+"44"}}>{club.nm.charAt(0)}</div>
+          <div className="flex-1"><div className="font-bold" style={{color:club.cl}}>{club.nm}</div>
+            <div className="text-xs text-gray-400">{club.city}</div></div>
+        </div>
+        <div className="mt-3 flex gap-2 flex-wrap">
+          <Badge text={club.std} cl="#6b7280" small/>
+          <Badge text={"Pitch: "+club.pt} cl={club.pt==="pace"?"#ef4444":club.pt==="spin"?"#a855f7":"#22c55e"} small/>
+          <Badge text={club.cap.toLocaleString()+" seats"} cl="#6b7280" small/>
+        </div>
+      </Card>)}
+    </div>
+  </div>};
+
+const SquadReveal=({squad,club,onContinue})=>{
+  const [revealed,setRevealed]=useState(0);
+  useEffect(()=>{if(!squad)return;if(revealed<squad.length){const t=setTimeout(()=>setRevealed(r=>r+1),120);return()=>clearTimeout(t)}},[revealed,squad]);
+  if(!squad||!club)return null;
+  const sorted=[...squad].sort((a,b)=>b.ov-a.ov);
+  return <div className="min-h-screen p-6 flex flex-col items-center justify-center">
+    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold gf mb-4" style={{background:club.cl+"22",color:club.cl,border:"2px solid "+club.cl+"44"}}>{club.nm.charAt(0)}</div>
+    <h1 className="text-2xl font-bold gf mb-1" style={{color:club.cl}}>{club.nm}</h1>
+    <p className="text-gray-400 text-sm mb-6">Your Squad</p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-w-2xl w-full mb-6">
+      {sorted.map((p,i)=><div key={p.id} className="slide-up" style={{opacity:i<revealed?1:0,transition:"opacity 0.3s",animationDelay:i*0.05+"s"}}>
+        <PlayerRow p={p} compact/>
+      </div>)}
+    </div>
+    {revealed>=squad.length&&<Btn onClick={onContinue} cl={club.cl} sz="lg">Enter Dashboard &rarr;</Btn>}
+  </div>};
+
+/* === DASHBOARD === */
+const Dashboard=({gs,setGs,setPh,selP,setSelP})=>{
+  const [tab,setTab]=useState("home");
+  const myClub=COUNTRIES.flatMap(c=>c.clubs).find(c=>c.id===gs.myClub);
+  const mySq=gs.squads[gs.myClub]||[];
+  const allClubs=COUNTRIES.find(c=>c.id===gs.myCntry)?.clubs||[];
+  const clubMap={};allClubs.forEach(c=>{clubMap[c.id]=c.nm});
+  const fx=gs.fixtures||[];const played=fx.filter(f=>f.played);const nextF=fx.find(f=>!f.played&&(f.home===gs.myClub||f.away===gs.myClub));
+  const st=gs.standings||{};const myS=st[gs.myClub]||{w:0,l:0,pts:0,nrr:0};
+  const round=nextF?nextF.round:1;
+  const tabs=[{id:"home",label:"Home",icon:"\u{1F3E0}"},{id:"squad",label:"Squad",icon:"\u{1F465}"},{id:"tactics",label:"Tactics",icon:"\u{2699}\u{FE0F}"},{id:"fixtures",label:"Fixtures",icon:"\u{1F4C5}"},{id:"table",label:"Table",icon:"\u{1F4CA}"},{id:"stats",label:"Stats",icon:"\u2B50"},{id:"search",label:"Search",icon:"\u{1F50D}"}];
+
+  return <div className="min-h-screen">
+    <div className="sticky top-0 z-40 p-3 border-b border-gray-700/30" style={{background:"rgba(6,10,16,0.95)",backdropFilter:"blur(10px)"}}>
+      <div className="flex items-center gap-3 mb-3 max-w-5xl mx-auto">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold gf text-sm" style={{background:myClub?.cl+"22",color:myClub?.cl}}>{myClub?.nm?.charAt(0)}</div>
+        <div className="flex-1"><div className="font-bold text-sm gf" style={{color:myClub?.cl}}>{myClub?.nm}</div><div className="text-[10px] text-gray-400">Season {gs.season} | Round {round}/{fx.length/allClubs.length*2||1}</div></div>
+        <div className="text-right"><div className="text-xs text-gray-400">Record</div><div className="text-sm font-bold"><span className="text-green-400">{myS.w}W</span> <span className="text-red-400">{myS.l}L</span></div></div>
+      </div>
+      <Tabs tabs={tabs} active={tab} onChange={setTab}/>
+    </div>
+    <div className="max-w-5xl mx-auto p-4">
+      {tab==="home"&&<HomeTab gs={gs} myClub={myClub} nextF={nextF} myS={myS} mySq={mySq} clubMap={clubMap} allClubs={allClubs} setPh={setPh} setGs={setGs}/>}
+      {tab==="squad"&&<SquadTab mySq={mySq} gs={gs} setGs={setGs} myClub={myClub} setSelP={setSelP}/>}
+      {tab==="tactics"&&<TacticsTab gs={gs} setGs={setGs} mySq={mySq}/>}
+      {tab==="fixtures"&&<FixturesTab fx={fx} myClub={gs.myClub} clubMap={clubMap}/>}
+      {tab==="table"&&<TableTab st={st} allClubs={allClubs} myClub={gs.myClub}/>}
+      {tab==="stats"&&<StatsTab gs={gs} clubMap={clubMap} setSelP={setSelP}/>}
+      {tab==="search"&&<SearchTab gs={gs} clubMap={clubMap} setSelP={setSelP}/>}
+    </div>
+    {selP&&<PlayerProfile p={selP} onClose={()=>setSelP(null)}/>}
+  </div>};
+
+const HomeTab=({gs,myClub,nextF,myS,mySq,clubMap,allClubs,setPh,setGs})=>{
+  const opp=nextF?allClubs.find(c=>c.id===(nextF.home===gs.myClub?nextF.away:nextF.home)):null;
+  const news=gs.news||[];
+  return <div className="space-y-4 slide-up">
+    {nextF&&opp&&<Card glow={myClub?.cl+"44"}>
+      <div className="text-xs text-gray-400 mb-2">Next Match - Round {nextF.round}</div>
+      <div className="flex items-center justify-between">
+        <div className="text-center flex-1"><div className="w-10 h-10 rounded-xl mx-auto flex items-center justify-center font-bold gf" style={{background:myClub?.cl+"22",color:myClub?.cl}}>{myClub?.nm?.charAt(0)}</div><div className="text-xs font-bold mt-1">{myClub?.nm}</div></div>
+        <div className="text-center px-4"><div className="text-lg font-bold gf text-gray-500">VS</div><div className="text-[10px] text-gray-500 mt-1">{opp.std}</div></div>
+        <div className="text-center flex-1"><div className="w-10 h-10 rounded-xl mx-auto flex items-center justify-center font-bold gf" style={{background:opp.cl+"22",color:opp.cl}}>{opp.nm.charAt(0)}</div><div className="text-xs font-bold mt-1">{opp.nm}</div></div>
+      </div>
+      <div className="mt-3 flex gap-2"><Btn onClick={()=>setPh("prematch")} cl={myClub?.cl} sz="sm" full>Play Match</Btn></div>
+    </Card>}
+    {!nextF&&<Card><div className="text-center py-6"><div className="text-2xl mb-2">&#x1F3C6;</div><div className="font-bold gf">Season Complete!</div><Btn onClick={()=>setPh("seasonend")} cl="#fbbf24" sz="sm" className="mt-3">View Results</Btn></div></Card>}
+    <Card>
+      <div className="text-xs text-gray-400 mb-2">Squad Overview</div>
+      <div className="grid grid-cols-4 gap-2 text-center">{[["Players",mySq.length],["Avg OVR",mySq.length>0?Math.round(mySq.reduce((s,p)=>s+p.ov,0)/mySq.length):0],["Injured",mySq.filter(p=>p.inj>0).length],["Form",mySq.length>0?Math.round(mySq.reduce((s,p)=>s+p.form,0)/mySq.length):0]].map(([l,v])=><div key={l}><div className="text-lg font-bold gf">{v}</div><div className="text-[10px] text-gray-400">{l}</div></div>)}</div>
+    </Card>
+    {news.length>0&&<Card><div className="text-xs text-gray-400 mb-2">News</div>{news.slice(0,5).map((n,i)=><div key={i} className="text-sm py-1 border-b border-gray-700/20 last:border-0">{n}</div>)}</Card>}
+  </div>};
+
+const SquadTab=({mySq,gs,setGs,myClub,setSelP})=>{
+  const [sort,setSort]=useState("ov");const [filter,setFilter]=useState("all");
+  let list=[...mySq];
+  if(filter!=="all")list=list.filter(p=>filter==="bat"?(p.role==="Batsman"||p.role==="WK-Batsman"):filter==="bowl"?BR.includes(p.role):p.role==="All-Rounder");
+  list.sort((a,b)=>sort==="ov"?b.ov-a.ov:sort==="bat"?b.bat-a.bat:sort==="bowl"?b.bowl-a.bowl:sort==="age"?a.age-b.age:sort==="form"?b.form-a.form:0);
+  const xi=gs.xi||autoXI(mySq).map(p=>p.id);
+  const toggleXI=(pid)=>{const cur=[...xi];const idx=cur.indexOf(pid);if(idx>=0)cur.splice(idx,1);else if(cur.length<11)cur.push(pid);setGs({...gs,xi:cur})};
+  return <div className="space-y-3 slide-up">
+    <div className="flex gap-2 flex-wrap">
+      {[["all","All"],["bat","Batters"],["bowl","Bowlers"],["ar","All-R"]].map(([k,l])=><button key={k} onClick={()=>setFilter(k)} className={"px-3 py-1 rounded-lg text-xs font-semibold "+(filter===k?"bg-blue-500/30 text-blue-400":"text-gray-400 hover:text-white")}>{l}</button>)}
+      <div className="flex-1"/>
+      <select value={sort} onChange={e=>setSort(e.target.value)} className="bg-gray-800 text-xs rounded-lg px-2 py-1 text-gray-300 border border-gray-700/50">
+        <option value="ov">Sort: OVR</option><option value="bat">Batting</option><option value="bowl">Bowling</option><option value="age">Age</option><option value="form">Form</option></select>
+    </div>
+    <div className="text-xs text-gray-400">Playing XI ({xi.length}/11) - tap to toggle</div>
+    {list.map(p=><div key={p.id} className={"flex items-center gap-2 rounded-lg transition-all "+(xi.includes(p.id)?"bg-blue-500/10 border border-blue-500/30":"border border-transparent")}>
+      <button onClick={()=>toggleXI(p.id)} className={"w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center border "+(xi.includes(p.id)?"bg-blue-500 border-blue-400 text-white":"border-gray-600 text-gray-500")}>{xi.includes(p.id)?xi.indexOf(p.id)+1:""}</button>
+      <div className="flex-1"><PlayerRow p={p} compact onClick={()=>setSelP(p)}/></div>
+      {p.inj>0&&<Badge text={"INJ "+p.inj} cl="#ef4444" small/>}
+    </div>)}
+  </div>};
+
+const TacticsTab=({gs,setGs,mySq})=>{
+  const tac=gs.tactics||{bat:"balanced",field:"balanced",bowl:"balanced"};
+  const upd=(k,v)=>setGs({...gs,tactics:{...tac,[k]:v}});
+  return <div className="space-y-4 slide-up">
+    <Card><div className="text-sm font-bold gf text-blue-400 mb-3">Batting Approach</div>
+      <div className="flex gap-2">{["defensive","balanced","aggressive"].map(v=><Btn key={v} onClick={()=>upd("bat",v)} cl={tac.bat===v?"#3b82f6":"#374151"} sz="sm" full>{v.charAt(0).toUpperCase()+v.slice(1)}</Btn>)}</div>
+      <div className="text-xs text-gray-400 mt-2">{tac.bat==="aggressive"?"Higher scoring but more wicket risk":tac.bat==="defensive"?"Conservative approach, preserve wickets":"Balanced approach between attack and defence"}</div>
+    </Card>
+    <Card><div className="text-sm font-bold gf text-green-400 mb-3">Field Setting</div>
+      <div className="flex gap-2">{["defensive","balanced","attacking"].map(v=><Btn key={v} onClick={()=>upd("field",v)} cl={tac.field===v?"#22c55e":"#374151"} sz="sm" full>{v.charAt(0).toUpperCase()+v.slice(1)}</Btn>)}</div>
+      <div className="text-xs text-gray-400 mt-2">{tac.field==="attacking"?"More catchers, higher wicket chances":tac.field==="defensive"?"Spread field, contain runs":"Standard field placement"}</div>
+    </Card>
+    <Card><div className="text-sm font-bold gf text-purple-400 mb-3">Bowling Strategy</div>
+      <div className="flex gap-2">{["defensive","balanced","aggressive"].map(v=><Btn key={v} onClick={()=>upd("bowl",v)} cl={tac.bowl===v?"#8b5cf6":"#374151"} sz="sm" full>{v.charAt(0).toUpperCase()+v.slice(1)}</Btn>)}</div>
+    </Card>
+    <Card><div className="text-sm font-bold gf text-yellow-400 mb-3">Team Chemistry</div>
+      {(()=>{const xi=gs.xi||[];const xiP=mySq.filter(p=>xi.includes(p.id));const ch=calcChem(xiP);return <div><Bar val={ch.score} cl="#fbbf24" label="Chemistry Score"/><div className="text-xs text-gray-400 mt-2">Chemistry affects player confidence and coordination during matches.</div></div>})()}
+    </Card>
+  </div>};
+
+const FixturesTab=({fx,myClub,clubMap})=>{
+  const rounds={};fx.forEach(f=>{if(!rounds[f.round])rounds[f.round]=[];rounds[f.round].push(f)});
+  return <div className="space-y-3 slide-up">
+    {Object.entries(rounds).map(([r,matches])=><Card key={r}>
+      <div className="text-xs text-gray-400 mb-2 font-bold">Round {r}</div>
+      {matches.map(f=>{const isMy=f.home===myClub||f.away===myClub;
+        return <div key={f.id} className={"flex items-center justify-between py-1.5 text-xs border-b border-gray-700/20 last:border-0 "+(isMy?"text-blue-300":"text-gray-300")}>
+          <span className={"flex-1 text-right "+(f.home===myClub?"font-bold":"")}>{clubMap[f.home]||f.home}</span>
+          <span className="px-3 font-bold gf">{f.played?<span>{f.result?.t1s+"/"+f.result?.t1w} vs {f.result?.t2s+"/"+f.result?.t2w}</span>:"vs"}</span>
+          <span className={"flex-1 "+(f.away===myClub?"font-bold":"")}>{clubMap[f.away]||f.away}</span>
+          {f.played&&f.result&&<span className="ml-2">{f.result.winner===myClub?<span className="text-green-400">W</span>:f.result.winner?<span className="text-red-400">L</span>:<span className="text-gray-400">T</span>}</span>}
+        </div>})}
+    </Card>)}
+  </div>};
+
+const TableTab=({st,allClubs,myClub})=>{
+  const rows=allClubs.map(c=>({...c,...(st[c.id]||{w:0,l:0,pts:0,nrr:0,m:0})})).sort((a,b)=>b.pts-a.pts||(b.nrr||0)-(a.nrr||0));
+  return <div className="slide-up"><Card>
+    <table className="w-full text-xs"><thead><tr className="text-gray-400 border-b border-gray-700/30">
+      <th className="text-left py-2 w-8">#</th><th className="text-left">Team</th><th className="text-center">P</th><th className="text-center">W</th><th className="text-center">L</th><th className="text-center">Pts</th><th className="text-center">NRR</th></tr></thead>
+      <tbody>{rows.map((r,i)=><tr key={r.id} className={r.id===myClub?"bg-blue-500/10 font-bold":""}><td className="py-1.5">{i+1}</td><td><span style={{color:r.cl}}>{r.nm}</span></td><td className="text-center">{r.m||0}</td><td className="text-center text-green-400">{r.w}</td><td className="text-center text-red-400">{r.l}</td><td className="text-center font-bold">{r.pts}</td><td className="text-center">{(r.nrr||0)>0?"+":""}{(r.nrr||0).toFixed(2)}</td></tr>)}</tbody>
+    </table>
+    {rows.length>=4&&<div className="mt-2 text-[10px] text-gray-500">Top 4 qualify for playoffs</div>}
+  </Card></div>};
+
+const StatsTab=({gs,clubMap,setSelP})=>{
+  const allP=gs.players||[];const withStats=allP.filter(p=>p.ms&&p.ms.m>0);
+  const topRuns=[...withStats].sort((a,b)=>b.ms.r-a.ms.r).slice(0,10);
+  const topWkts=[...withStats].sort((a,b)=>b.ms.w-a.ms.w).slice(0,10);
+  const topSR=[...withStats].filter(p=>p.ms.bf>=30).sort((a,b)=>(b.ms.r/b.ms.bf)-(a.ms.r/a.ms.bf)).slice(0,10);
+  const Leaderboard=({title,data,valFn,color})=><Card><div className="text-sm font-bold gf mb-2" style={{color}}>{title}</div>
+    {data.map((p,i)=><div key={p.id} onClick={()=>setSelP(p)} className="flex items-center gap-2 py-1 cursor-pointer hover:bg-white/5 rounded text-xs">
+      <span className="w-5 text-gray-500 font-bold">{i+1}</span><Face3D p={p} sz={24}/><span className="flex-1 truncate">{p.name}</span><span className="text-gray-400 text-[10px]">{clubMap[p.club]||""}</span><span className="font-bold" style={{color}}>{valFn(p)}</span>
+    </div>)}</Card>;
+  return <div className="space-y-3 slide-up">
+    <Leaderboard title="Most Runs" data={topRuns} valFn={p=>p.ms.r} color="#22c55e"/>
+    <Leaderboard title="Most Wickets" data={topWkts} valFn={p=>p.ms.w} color="#ef4444"/>
+    <Leaderboard title="Best Strike Rate" data={topSR} valFn={p=>(p.ms.r/p.ms.bf*100).toFixed(0)} color="#f59e0b"/>
+  </div>};
+
+const SearchTab=({gs,clubMap,setSelP})=>{
+  const [q,setQ]=useState("");const [roleF,setRoleF]=useState("all");
+  const allP=gs.players||[];
+  let results=allP;
+  if(q)results=results.filter(p=>p.name.toLowerCase().includes(q.toLowerCase()));
+  if(roleF!=="all")results=results.filter(p=>roleF==="bat"?(p.role==="Batsman"||p.role==="WK-Batsman"):roleF==="bowl"?BR.includes(p.role):p.role==="All-Rounder");
+  results=results.sort((a,b)=>b.ov-a.ov).slice(0,50);
+  return <div className="space-y-3 slide-up">
+    <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search players..." className="w-full bg-gray-800/50 border border-gray-700/50 rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50"/>
+    <div className="flex gap-2">{[["all","All"],["bat","Batters"],["bowl","Bowlers"],["ar","All-R"]].map(([k,l])=><button key={k} onClick={()=>setRoleF(k)} className={"px-3 py-1 rounded-lg text-xs font-semibold "+(roleF===k?"bg-blue-500/30 text-blue-400":"text-gray-400")}>{l}</button>)}</div>
+    <div className="text-xs text-gray-400">{results.length} players</div>
+    {results.map(p=><PlayerRow key={p.id} p={p} onClick={()=>setSelP(p)} showClub clubMap={clubMap}/>)}
+  </div>};
+
+/* === CRICKET GROUND VISUALIZATION === */
+const CricketGround=({fieldSet,lastBall,phase})=>{
+  const fp=FP[fieldSet==="attacking"?"a":fieldSet==="defensive"?"d":"b"];
+  const ballAnim=lastBall&&lastBall.t!=="dot"?lastBall:null;
+  const ballAngle=ballAnim?rng.f(0,Math.PI*2):0;
+  const ballDist=ballAnim?(ballAnim.t==="4"||ballAnim.t==="6"?85:ballAnim.t==="W"?15:30+parseInt(ballAnim.runs||0)*15):0;
+  const bx=50+Math.cos(ballAngle)*ballDist*0.45;const by=50+Math.sin(ballAngle)*ballDist*0.45;
+  return <svg viewBox="0 0 100 100" className="w-full max-w-xs mx-auto" style={{filter:"drop-shadow(0 0 20px rgba(34,197,94,0.15))"}}>
+    <defs>
+      <radialGradient id="gf" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#15803d"/><stop offset="70%" stopColor="#166534"/><stop offset="100%" stopColor="#14532d"/></radialGradient>
+      <linearGradient id="gp" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#d4a574"/><stop offset="100%" stopColor="#b8956a"/></linearGradient>
+    </defs>
+    <ellipse cx="50" cy="50" rx="48" ry="48" fill="url(#gf)" stroke="#22c55e" strokeWidth="0.5" strokeOpacity="0.4"/>
+    <ellipse cx="50" cy="50" rx="25" ry="25" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="0.3" strokeDasharray="2 2"/>
+    <rect x="48" y="35" width="4" height="30" rx="0.5" fill="url(#gp)" opacity="0.9"/>
+    <rect x="49" y="36" width="2" height="1" rx="0.3" fill="#8B4513"/>
+    <rect x="49" y="63" width="2" height="1" rx="0.3" fill="#8B4513"/>
+    {fp.map((pos,i)=><g key={i}><circle cx={pos.x} cy={pos.y} r="1.8" fill="white" opacity="0.9"/><circle cx={pos.x} cy={pos.y} r="2.5" fill="none" stroke="white" strokeWidth="0.2" opacity="0.3"/></g>)}
+    <circle cx="50" cy="64" r="2.2" fill="#3b82f6" opacity="0.9"/>
+    <circle cx="50" cy="38" r="2.2" fill="#ef4444" opacity="0.9"/>
+    {ballAnim&&<><circle cx="50" cy="38" r="1" fill="#dc2626"><animateMotion dur="0.6s" fill="freeze" path={"M0,0 Q"+(bx-50)+","+(by-60)+" "+(bx-50)+","+(by-38)}/></circle>
+    {(ballAnim.t==="4"||ballAnim.t==="6")&&<circle cx={bx} cy={by} r="3" fill="none" stroke="#fbbf24" strokeWidth="0.5" opacity="0"><animate attributeName="r" from="2" to="8" dur="0.8s"/><animate attributeName="opacity" from="0.8" to="0" dur="0.8s"/></circle>}</>}
+    <text x="50" y="98" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="2.5" fontFamily="Oswald">{phase==="pp"?"POWERPLAY":phase==="mid"?"MIDDLE OVERS":"DEATH OVERS"}</text>
+  </svg>};
+
+/* === WAGON WHEEL === */
+const WagonWheel=({shots})=>{
+  if(!shots||shots.length===0)return null;
+  return <svg viewBox="0 0 100 100" className="w-full max-w-[160px] mx-auto">
+    <ellipse cx="50" cy="50" rx="48" ry="48" fill="#0a1628" stroke="#1e3a5f" strokeWidth="0.5"/>
+    <line x1="50" y1="2" x2="50" y2="98" stroke="#1e3a5f" strokeWidth="0.3"/>
+    <line x1="2" y1="50" x2="98" y2="50" stroke="#1e3a5f" strokeWidth="0.3"/>
+    <rect x="48.5" y="42" width="3" height="16" rx="0.5" fill="#4a3728" opacity="0.5"/>
+    {shots.slice(-30).map((s,i)=>{const ang=s.angle||rng.f(0,Math.PI*2);const dist=s.runs>=6?44:s.runs>=4?40:s.runs*10+8;
+      const ex=50+Math.cos(ang)*dist;const ey=50+Math.sin(ang)*dist;
+      return <line key={i} x1="50" y1="50" x2={ex} y2={ey} stroke={s.runs>=6?"#fbbf24":s.runs>=4?"#22c55e":s.runs>=2?"#3b82f6":"#6b7280"} strokeWidth={s.runs>=4?"1":"0.5"} opacity="0.7"/>})}
+    <circle cx="50" cy="50" r="1.5" fill="white" opacity="0.5"/>
+  </svg>};
+
+/* === MANHATTAN CHART === */
+const Manhattan=({overRuns})=>{
+  if(!overRuns||overRuns.length===0)return null;
+  const maxR=Math.max(...overRuns,1);
+  return <svg viewBox={"0 0 "+Math.max(overRuns.length*6+4,60)+" 40"} className="w-full" preserveAspectRatio="xMinYMax meet">
+    <line x1="2" y1="38" x2={overRuns.length*6+2} y2="38" stroke="#374151" strokeWidth="0.5"/>
+    {overRuns.map((r,i)=>{const h=r/maxR*32;return <g key={i}><rect x={i*6+2} y={38-h} width="4" height={h} rx="0.5" fill={r>=12?"#fbbf24":r>=8?"#22c55e":r>=4?"#3b82f6":"#6b7280"} opacity="0.8"/>
+      {i%2===0&&<text x={i*6+4} y="39.5" textAnchor="middle" fill="#6b7280" fontSize="2">{i+1}</text>}</g>})}
+  </svg>};
+
+/* === OVER SUMMARY DOTS === */
+const OverDots=({balls})=>{
+  if(!balls||balls.length===0)return null;
+  const colors={dot:"#6b7280","1":"#94a3b8","2":"#3b82f6","3":"#8b5cf6","4":"#22c55e","6":"#fbbf24",W:"#ef4444",wd:"#f59e0b",nb:"#f97316"};
+  return <div className="flex gap-1.5 items-center flex-wrap">
+    {balls.map((b,i)=><div key={i} className="flex flex-col items-center">
+      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold" style={{background:(colors[b.t]||"#6b7280")+"33",color:colors[b.t]||"#6b7280",border:"1.5px solid "+(colors[b.t]||"#6b7280")+"66"}}>{b.t==="dot"?"\u00B7":b.t==="W"?"W":b.t==="wd"?"Wd":b.t==="nb"?"Nb":b.runs}</div>
+    </div>)}
+  </div>};
+
+/* === MOMENTUM METER === */
+const MomentumMeter=({val})=>{
+  const clamped=Math.max(-50,Math.min(50,val||0));const pct=50+clamped;
+  return <div className="w-full"><div className="flex justify-between text-[10px] text-gray-400 mb-1"><span>Bowling</span><span>Batting</span></div>
+    <div className="h-2 rounded-full relative overflow-hidden" style={{background:"linear-gradient(90deg,#ef4444 0%,#374151 50%,#22c55e 100%)"}}>
+      <div className="absolute top-0 h-full w-1 bg-white rounded-full transition-all duration-500" style={{left:pct+"%",transform:"translateX(-50%)"}}/>
+    </div></div>};
+
+/* === SCORECARD MINI === */
+const MiniScore=({label,score,wkts,overs,rr,color,target})=>
+  <div className="text-center"><div className="text-[10px] text-gray-400 mb-0.5">{label}</div>
+    <div className="text-xl font-bold gf" style={{color:color||"#e2e8f0"}}>{score}<span className="text-sm text-gray-400">/{wkts}</span></div>
+    <div className="text-[10px] text-gray-400">({overs} ov) RR: {rr}</div>
+    {target>0&&<div className="text-[10px] text-yellow-400">Need {Math.max(0,target-score)} from {Math.max(0,120-Math.floor(overs)*6-Math.round((overs%1)*10))} balls</div>}
+  </div>;
+
+/* === PRE-MATCH SCREEN === */
+const PreMatch=({gs,setGs,setPh,myClub,oppClub})=>{
+  const mySq=gs.squads[gs.myClub]||[];const xi=gs.xi||autoXI(mySq).map(p=>p.id);
+  const xiPlayers=mySq.filter(p=>xi.includes(p.id));
+  const tac=gs.tactics||{bat:"balanced",field:"balanced",bowl:"balanced"};
+  const weather=rng.p(WEATHER);const isDN=rng.c(0.4);const toss=rng.c(0.5);const tossWin=toss?"You":"Opponent";
+  const [batFirst,setBatFirst]=useState(toss);
+  return <div className="min-h-screen p-4 flex flex-col items-center justify-center max-w-2xl mx-auto">
+    <h1 className="text-2xl font-bold gf mb-4 slide-up">Match Day</h1>
+    <Card className="w-full mb-4 slide-up">
+      <div className="flex items-center justify-between">
+        <div className="text-center flex-1"><div className="w-12 h-12 rounded-xl mx-auto flex items-center justify-center font-bold gf text-lg" style={{background:myClub.cl+"22",color:myClub.cl}}>{myClub.nm.charAt(0)}</div><div className="text-sm font-bold mt-1" style={{color:myClub.cl}}>{myClub.nm}</div></div>
+        <div className="text-center px-4"><div className="text-xl font-bold gf text-gray-500">VS</div></div>
+        <div className="text-center flex-1"><div className="w-12 h-12 rounded-xl mx-auto flex items-center justify-center font-bold gf text-lg" style={{background:oppClub.cl+"22",color:oppClub.cl}}>{oppClub.nm.charAt(0)}</div><div className="text-sm font-bold mt-1" style={{color:oppClub.cl}}>{oppClub.nm}</div></div>
+      </div>
+      <div className="mt-4 flex gap-3 justify-center flex-wrap text-xs">
+        <Badge text={oppClub.std} cl="#6b7280"/><Badge text={"Pitch: "+oppClub.pt} cl={oppClub.pt==="pace"?"#ef4444":"#22c55e"}/><Badge text={weather} cl="#3b82f6"/>{isDN&&<Badge text="Day/Night" cl="#f59e0b"/>}
+      </div>
+    </Card>
+    <Card className="w-full mb-4 slide-up" style={{animationDelay:"0.1s"}}>
+      <div className="text-sm font-bold gf text-yellow-400 mb-2">Toss: {tossWin} won!</div>
+      {toss&&<div className="flex gap-2"><Btn onClick={()=>setBatFirst(true)} cl={batFirst?"#3b82f6":"#374151"} sz="sm">Bat First</Btn><Btn onClick={()=>setBatFirst(false)} cl={!batFirst?"#3b82f6":"#374151"} sz="sm">Bowl First</Btn></div>}
+      {!toss&&<div className="text-xs text-gray-400">Opponent elected to {rng.c(0.5)?"bat":"bowl"} first</div>}
+    </Card>
+    <Card className="w-full mb-4 slide-up" style={{animationDelay:"0.2s"}}>
+      <div className="text-sm font-bold gf text-blue-400 mb-2">Your XI ({xiPlayers.length}/11)</div>
+      <div className="grid grid-cols-2 gap-1">{xiPlayers.map(p=><div key={p.id} className="flex items-center gap-1 text-xs py-0.5"><Face3D p={p} sz={20}/><span className="truncate">{p.name}</span><span className="text-gray-500">{p.ov}</span></div>)}</div>
+      {xiPlayers.length<11&&<div className="text-xs text-red-400 mt-2">Warning: Need {11-xiPlayers.length} more players!</div>}
+    </Card>
+    <Btn onClick={()=>{setGs({...gs,matchWeather:weather,matchDN:isDN,matchBatFirst:batFirst,matchTossWin:tossWin,xi:xi});setPh("match")}} cl={myClub.cl} sz="lg" disabled={xiPlayers.length<11}>Start Match</Btn>
+  </div>};
+
+/* === MAIN MATCH SCREEN === */
+const MatchScreen=({gs,setGs,setPh})=>{
+  const allClubs=COUNTRIES.find(c=>c.id===gs.myCntry)?.clubs||[];
+  const nextF=(gs.fixtures||[]).find(f=>!f.played&&(f.home===gs.myClub||f.away===gs.myClub));
+  if(!nextF)return null;
+  const isHome=nextF.home===gs.myClub;const myClub=allClubs.find(c=>c.id===gs.myClub);const oppId=isHome?nextF.away:nextF.home;const oppClub=allClubs.find(c=>c.id===oppId);
+  const mySq=gs.squads[gs.myClub]||[];const oppSq=gs.squads[oppId]||[];
+  const myXI=mySq.filter(p=>(gs.xi||[]).includes(p.id)).slice(0,11);const oppXI=autoXI(oppSq);
+  const myBat=aiBat(myXI);const oppBat=aiBat(oppXI);
+  const batFirst=gs.matchBatFirst;const pt=oppClub?.pt||"balanced";
+  const tac=gs.tactics||{bat:"balanced",field:"balanced",bowl:"balanced"};
+  const team1=batFirst?{id:gs.myClub,club:myClub,xi:myXI,bat:myBat,isMy:true}:{id:oppId,club:oppClub,xi:oppXI,bat:oppBat,isMy:false};
+  const team2=batFirst?{id:oppId,club:oppClub,xi:oppXI,bat:oppBat,isMy:false}:{id:gs.myClub,club:myClub,xi:myXI,bat:myBat,isMy:true};
+
+  const bowlersOf=(xi)=>xi.filter(p=>BR.includes(p.role)||p.role==="All-Rounder");
+  const pickBowler=(bowlers,ovrBowl,lastBwl)=>{const avail=bowlers.filter(p=>(ovrBowl[p.id]||0)<4&&p.id!==lastBwl);if(avail.length===0)return bowlers.find(p=>(ovrBowl[p.id]||0)<4)||bowlers[0];return avail.sort((a,b)=>b.bowl-a.bowl)[rng.c(0.7)?0:rng.i(0,Math.min(2,avail.length-1))]};
+
+  const initMs=()=>({score:0,wkts:0,balls:0,overs:"0.0",rr:"0.00",extras:0,overRuns:[],thisOver:[],batsmen:[{...team1.bat[0],r:0,b:0,f4:0,s6:0,sr:"0.0",onStrike:true},{...team1.bat[1],r:0,b:0,f4:0,s6:0,sr:"0.0",onStrike:false}],nextBat:2,bowler:null,ovrBowl:{},lastBwl:null,fow:[],partnerships:[{runs:0,balls:0}],momentum:0,shots:[],commentary:[],keyMoments:[],done:false});
+
+  const [inn,setInn]=useState(1);const [ms,setMs]=useState(initMs);const [speed,setSpeed]=useState(0);const [paused,setPaused]=useState(true);
+  const [inn1,setInn1]=useState(null);const [finished,setFinished]=useState(false);
+  const msRef=useRef(ms);msRef.current=ms;const innRef=useRef(inn);innRef.current=inn;const inn1Ref=useRef(inn1);inn1Ref.current=inn1;const timerRef=useRef(null);
+
+  const batTeam=inn===1?team1:team2;const bowlTeam=inn===1?team2:team1;
+  const target=inn===2&&inn1?inn1.score+1:0;
+  const isDN=gs.matchDN;const dew=isDN?0.6:0;
+
+  useEffect(()=>{
+    if(!ms.bowler){const bwls=bowlersOf(bowlTeam.xi);const b=pickBowler(bwls,ms.ovrBowl,ms.lastBwl);setMs(prev=>({...prev,bowler:b}))}
+  },[]);
+
+  const execOneBall=()=>{
+    const m={...msRef.current};if(m.done)return m;
+    const stk=m.batsmen.find(b=>b.onStrike);const nonStk=m.batsmen.find(b=>!b.onStrike);
+    if(!stk||!m.bowler)return m;
+    const ph=gPh(Math.floor(m.balls/6));const ag=batTeam.isMy?tac.bat:"balanced";const fld=batTeam.isMy?tac.field:"balanced";
+    const ch=inn===2;const wk=m.wkts;const bl=m.balls;
+    const res=simB(stk,m.bowler,ph,pt,fld,ag,ch,ch?target:null,m.score,wk,bl,m.momentum,isDN,dew);
+    let runs=res.runs;let comm="";const isWide=res.t==="wd";const isNb=res.t==="nb";
+    if(res.t==="4"){stk.r+=4;stk.f4++;stk.b++;m.score+=4;comm=commFor("s4");m.shots.push({runs:4,angle:rng.f(0,Math.PI*2)});m.momentum=Math.min(50,m.momentum+5)}
+    else if(res.t==="6"){stk.r+=6;stk.s6++;stk.b++;m.score+=6;comm=commFor("s6");m.shots.push({runs:6,angle:rng.f(0,Math.PI*2)});m.momentum=Math.min(50,m.momentum+8)}
+    else if(res.t==="W"){stk.b++;comm=(WT[res.wty]||"OUT")+": "+stk.name+" "+stk.r+"("+stk.b+") ["+m.bowler.name+"]";m.wkts++;m.fow.push({name:stk.name,r:stk.r,b:stk.b,score:m.score,wkt:m.wkts});
+      m.keyMoments.push({type:"wicket",text:comm,score:m.score+"/"+m.wkts,over:m.overs});m.momentum=Math.max(-50,m.momentum-10);
+      if(m.wkts>=10||m.nextBat>=batTeam.bat.length){m.done=true}else{const nb=batTeam.bat[m.nextBat];m.batsmen=[{...nb,r:0,b:0,f4:0,s6:0,sr:"0.0",onStrike:true},nonStk];m.nextBat++;m.partnerships.push({runs:0,balls:0})}}
+    else if(isWide||isNb){m.score+=1;m.extras++;comm=commFor(isWide?"wd":"nb")}
+    else if(res.t==="dot"){stk.b++;comm=commFor("dot");m.momentum=Math.max(-50,m.momentum-1)}
+    else{const r2=parseInt(res.t);stk.r+=r2;stk.b++;m.score+=r2;comm=commFor("s"+res.t);if(r2%2===1){m.batsmen.forEach(b=>{b.onStrike=!b.onStrike})}m.shots.push({runs:r2,angle:rng.f(0,Math.PI*2)});m.momentum=Math.min(50,m.momentum+r2-1)}
+    if(!isWide&&!isNb){m.balls++;const curP=m.partnerships[m.partnerships.length-1];if(curP){curP.runs+=(res.t==="W"?0:runs);curP.balls++}}
+    else{m.score=m.score}
+    m.batsmen.forEach(b=>{b.sr=b.b>0?(b.r/b.b*100).toFixed(1):"0.0"});
+    m.thisOver.push({t:res.t,runs:res.runs,wty:res.wty});
+    const ov=Math.floor(m.balls/6);const ballInOv=m.balls%6;m.overs=ov+(ballInOv>0?"."+ballInOv:"");m.rr=m.balls>0?(m.score/(m.balls/6)).toFixed(2):"0.00";
+    const runsThisBall=res.t==="4"?4:res.t==="6"?6:res.t==="dot"||res.t==="W"?0:parseInt(res.t)||0;const prevR=stk.r-runsThisBall;
+    if(stk.r>=50&&prevR<50&&res.t!=="W"){comm+="\n"+commFor("m50");m.keyMoments.push({type:"fifty",text:stk.name+" reaches 50!",score:m.score+"/"+m.wkts,over:m.overs})}
+    if(stk.r>=100&&prevR<100&&res.t!=="W"){comm+="\n"+commFor("m100");m.keyMoments.push({type:"century",text:stk.name+" scores a CENTURY!",score:m.score+"/"+m.wkts,over:m.overs})}
+    if(ballInOv===0&&m.balls>0){const thisOvRuns=m.thisOver.reduce((s,b)=>s+b.runs,0);m.overRuns.push(thisOvRuns);
+      if(thisOvRuns>=12)comm+="\n"+commFor("bigOv");else if(thisOvRuns<=3)comm+="\n"+commFor("tightOv",{runs:thisOvRuns});
+      m.thisOver=[];const bwls=bowlersOf(bowlTeam.xi);const nb2=pickBowler(bwls,m.ovrBowl,m.bowler.id);m.ovrBowl[m.bowler.id]=(m.ovrBowl[m.bowler.id]||0)+1;m.lastBwl=m.bowler.id;m.bowler=nb2;
+      m.batsmen.forEach(b=>{b.onStrike=!b.onStrike})}
+    if(m.balls>=120)m.done=true;
+    if(inn===2&&inn1&&m.score>=target){m.done=true}
+    m.commentary=[{text:comm,type:res.t,over:m.overs},...m.commentary.slice(0,50)];
+    return m};
+
+  const runBall=useCallback(()=>{const nm=execOneBall();setMs({...nm});if(nm.done){setPaused(true);clearInterval(timerRef.current)}},[inn,inn1]);
+
+  const startSim=(spd)=>{clearInterval(timerRef.current);setSpeed(spd);setPaused(false);
+    const delays={1:800,2:150,3:50,4:5};const d=delays[spd]||800;
+    if(spd===4){let m=msRef.current;while(!m.done){m=execOneBall();msRef.current=m}setMs({...m});setPaused(true);return}
+    timerRef.current=setInterval(()=>{const nm=execOneBall();setMs({...nm});if(nm.done){clearInterval(timerRef.current);setPaused(true)}},d)};
+
+  const pauseSim=()=>{clearInterval(timerRef.current);setPaused(true)};
+
+  const endInnings=()=>{if(inn===1){const summary={score:ms.score,wkts:ms.wkts,overs:ms.overs,rr:ms.rr,batsmen:ms.batsmen,fow:ms.fow,overRuns:ms.overRuns,keyMoments:ms.keyMoments,bowler:ms.bowler,ovrBowl:ms.ovrBowl};
+    setInn1(summary);inn1Ref.current=summary;setInn(2);
+    const newMs=initMs();newMs.batsmen=[{...team2.bat[0],r:0,b:0,f4:0,s6:0,sr:"0.0",onStrike:true},{...team2.bat[1],r:0,b:0,f4:0,s6:0,sr:"0.0",onStrike:false}];
+    const bwls=bowlersOf(team1.xi);newMs.bowler=pickBowler(bwls,{},null);
+    setMs(newMs);msRef.current=newMs}
+  else{finishMatch()}};
+
+  const finishMatch=()=>{
+    const i1=inn1Ref.current||inn1||{score:0,wkts:0};const i2s=msRef.current.score;const i2w=msRef.current.wkts;
+    let winner=null,margin="";
+    if(inn===2||msRef.current.done){
+      if(i2s>=target){winner=batTeam===team2?team2.id:team1.id;margin=(10-i2w)+" wickets"}
+      else if(i2s<i1.score){winner=team1.id;margin=(i1.score-i2s)+" runs"}
+      else{winner=null;margin="Tie"}}
+    const result={t1:team1.id,t2:team2.id,t1s:i1.score,t1w:i1.wkts||0,t2s:i2s,t2w:i2w,winner,margin,mom:null};
+    const ngs={...gs};const fi=ngs.fixtures.findIndex(f=>f.id===nextF.id);if(fi>=0){ngs.fixtures[fi].played=true;ngs.fixtures[fi].result=result}
+    if(!ngs.standings)ngs.standings={};allClubs.forEach(c=>{if(!ngs.standings[c.id])ngs.standings[c.id]={w:0,l:0,pts:0,nrr:0,m:0}});
+    ngs.standings[team1.id].m++;ngs.standings[team2.id].m++;
+    if(winner===team1.id){ngs.standings[team1.id].w++;ngs.standings[team1.id].pts+=2;ngs.standings[team2.id].l++}
+    else if(winner===team2.id){ngs.standings[team2.id].w++;ngs.standings[team2.id].pts+=2;ngs.standings[team1.id].l++}
+    else{ngs.standings[team1.id].pts+=1;ngs.standings[team2.id].pts+=1}
+    const nrr1=(i1.score/(Math.max(1,120)))-((i2s)/Math.max(1,120));
+    ngs.standings[team1.id].nrr=+((ngs.standings[team1.id].nrr||0)+nrr1*0.1).toFixed(3);
+    ngs.standings[team2.id].nrr=+((ngs.standings[team2.id].nrr||0)-nrr1*0.1).toFixed(3);
+    [...team1.xi,...team2.xi].forEach(xp=>{const pi=ngs.players.findIndex(p=>p.id===xp.id);if(pi>=0){const won=winner===ngs.players[pi].club;const ps=simPS(ngs.players[pi],won);ngs.players[pi].ms=addMS(ngs.players[pi].ms||{r:0,w:0,m:0},ps);ngs.players[pi].form=cl(ngs.players[pi].form+(ps.rating>=7?rng.i(2,5):ps.rating<=4?rng.i(-5,-2):rng.i(-1,2)));ngs.players[pi].conf=cl(ngs.players[pi].conf+(won?rng.i(1,4):rng.i(-4,-1)));ngs.players[pi].mor=cl(ngs.players[pi].mor+rng.i(-3,3))}});
+    ngs.lastResult=result;ngs.lastInn1=inn1Ref.current||inn1;ngs.lastInn2={score:i2s,wkts:i2w,overs:msRef.current.overs};
+    ngs.lastKeyMoments=[...(inn1Ref.current?.keyMoments||[]),...(msRef.current.keyMoments||[])];
+    setGs(ngs);setFinished(true);setPh("matchreport")};
+
+  useEffect(()=>{return()=>{clearInterval(timerRef.current)}},[]);
+
+  if(ms.done&&!finished){return <div className="min-h-screen p-4 flex flex-col items-center justify-center">
+    <Card className="text-center w-full max-w-md"><h2 className="text-xl font-bold gf mb-2">{inn===1?"Innings Break":"Match Over"}</h2>
+      <div className="text-3xl font-bold gf mb-2" style={{color:batTeam.club?.cl}}>{ms.score}/{ms.wkts}</div>
+      <div className="text-sm text-gray-400 mb-4">({ms.overs} overs, RR: {ms.rr})</div>
+      {inn===1&&inn1===null&&<div className="text-sm text-gray-400 mb-2">Target: {ms.score+1}</div>}
+      {ms.keyMoments.length>0&&<div className="text-left mb-4">{ms.keyMoments.slice(-5).map((km,i)=><div key={i} className="text-xs py-1 border-b border-gray-700/20"><span className={km.type==="wicket"?"text-red-400":km.type==="century"?"text-yellow-400":"text-green-400"}>{km.text}</span></div>)}</div>}
+      <Btn onClick={endInnings} cl={batTeam.club?.cl||"#3b82f6"} sz="lg">{inn===1?"Start 2nd Innings":"View Report"}</Btn>
+    </Card></div>}
+
+  const ph=gPh(Math.floor(ms.balls/6));const stk=ms.batsmen.find(b=>b.onStrike);const nonStk=ms.batsmen.find(b=>!b.onStrike);
+  const lastBall=ms.thisOver.length>0?ms.thisOver[ms.thisOver.length-1]:null;
+
+  return <div className="min-h-screen">
+    <div className="sticky top-0 z-40 p-2 border-b border-gray-700/30" style={{background:"rgba(6,10,16,0.95)"}}>
+      <div className="flex items-center justify-between max-w-5xl mx-auto">
+        <MiniScore label={team1.club?.nm} score={inn===1?ms.score:(inn1?.score||0)} wkts={inn===1?ms.wkts:(inn1?.wkts||0)} overs={inn===1?ms.overs:(inn1?.overs||"20")} rr={inn===1?ms.rr:(inn1?.rr||"0")} color={team1.club?.cl}/>
+        <div className="text-center"><div className={"text-[10px] px-2 py-0.5 rounded-full "+(inn===1?"bg-blue-500/20 text-blue-400":"bg-green-500/20 text-green-400")}>{inn===1?"1st Inn":"2nd Inn"}</div>
+          <div className={"text-[10px] mt-1 px-2 py-0.5 rounded-full "+(ph==="pp"?"bg-yellow-500/20 text-yellow-400":ph==="mid"?"bg-blue-500/20 text-blue-400":"bg-red-500/20 text-red-400")}>{ph==="pp"?"Powerplay":ph==="mid"?"Middle":"Death"}</div></div>
+        <MiniScore label={team2.club?.nm} score={inn===2?ms.score:(inn1?.score||"-")} wkts={inn===2?ms.wkts:""} overs={inn===2?ms.overs:""} rr={inn===2?ms.rr:""} color={team2.club?.cl} target={inn===2?target:0}/>
+      </div>
+    </div>
+    <div className="max-w-5xl mx-auto p-3 grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div className="lg:col-span-2 space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <Card><CricketGround fieldSet={tac.field} lastBall={lastBall} phase={ph}/></Card>
+          <Card>
+            <div className="text-xs text-gray-400 mb-1">Batting</div>
+            {stk&&<div className={"flex items-center gap-2 p-1.5 rounded-lg "+(stk.onStrike?"bg-yellow-500/10 border border-yellow-500/20":"")}>
+              <Face3D p={stk} sz={28}/><div className="flex-1"><div className="text-xs font-bold">{stk.name}*</div><div className="text-[10px] text-gray-400">{stk.r}({stk.b}) SR:{stk.sr}</div></div></div>}
+            {nonStk&&<div className="flex items-center gap-2 p-1.5"><Face3D p={nonStk} sz={28}/><div className="flex-1"><div className="text-xs">{nonStk.name}</div><div className="text-[10px] text-gray-400">{nonStk.r}({nonStk.b}) SR:{nonStk.sr}</div></div></div>}
+            <div className="border-t border-gray-700/30 mt-2 pt-2"><div className="text-xs text-gray-400 mb-1">Bowling</div>
+              {ms.bowler&&<div className="flex items-center gap-2"><Face3D p={ms.bowler} sz={24}/><div><div className="text-xs font-bold">{ms.bowler.name}</div><div className="text-[10px] text-gray-400">{ms.ovrBowl[ms.bowler.id]||0}-0-0-0</div></div></div>}
+            </div>
+            <MomentumMeter val={ms.momentum}/>
+          </Card>
+        </div>
+        <Card>
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-xs text-gray-400">This Over</div>
+            <div className="flex gap-1">
+              {paused?<><Btn onClick={()=>startSim(1)} cl="#22c55e" sz="sm">Ball</Btn><Btn onClick={()=>startSim(2)} cl="#3b82f6" sz="sm">Over</Btn><Btn onClick={()=>startSim(3)} cl="#8b5cf6" sz="sm">Fast</Btn><Btn onClick={()=>startSim(4)} cl="#f59e0b" sz="sm">Sim</Btn></>:<Btn onClick={pauseSim} cl="#ef4444" sz="sm">Pause</Btn>}
+            </div>
+          </div>
+          <OverDots balls={ms.thisOver}/>
+        </Card>
+      </div>
+      <div className="space-y-3">
+        <Card><div className="text-xs text-gray-400 mb-2">Commentary</div>
+          <div className="max-h-60 overflow-y-auto hide-sb space-y-1">
+            {ms.commentary.map((c,i)=><div key={i} className={"text-xs py-1 border-b border-gray-700/10 "+(c.type==="4"?"text-green-400":c.type==="6"?"text-yellow-400":c.type==="W"?"text-red-400":"text-gray-300")}>
+              <span className="text-gray-500 mr-1">{c.over}</span>{c.text}
+            </div>)}
+          </div>
+        </Card>
+        <Card><div className="text-xs text-gray-400 mb-1">Wagon Wheel</div><WagonWheel shots={ms.shots}/></Card>
+        <Card><div className="text-xs text-gray-400 mb-1">Manhattan</div><Manhattan overRuns={ms.overRuns}/></Card>
+        {ms.fow.length>0&&<Card><div className="text-xs text-gray-400 mb-1">Fall of Wickets</div>
+          {ms.fow.map((f,i)=><div key={i} className="text-[10px] text-red-400">{f.score}/{i+1} - {f.name} {f.r}({f.b})</div>)}</Card>}
+      </div>
+    </div>
+  </div>};
+
+/* === MATCH REPORT === */
+const MatchReport=({gs,setPh})=>{
+  const r=gs.lastResult;const i1=gs.lastInn1;const i2=gs.lastInn2;const km=gs.lastKeyMoments||[];
+  if(!r)return null;
+  const allClubs=COUNTRIES.find(c=>c.id===gs.myCntry)?.clubs||[];
+  const c1=allClubs.find(c=>c.id===r.t1);const c2=allClubs.find(c=>c.id===r.t2);
+  const winClub=r.winner?allClubs.find(c=>c.id===r.winner):null;
+  return <div className="min-h-screen p-4 flex flex-col items-center justify-center max-w-2xl mx-auto">
+    <div className="slide-up w-full space-y-4">
+      <Card glow={winClub?winClub.cl+"44":"#fbbf2444"}>
+        <div className="text-center"><div className="text-3xl mb-2">&#x1F3CF;</div>
+          <h1 className="text-xl font-bold gf">{winClub?winClub.nm+" Win!":"Match Tied!"}</h1>
+          <div className="text-sm text-gray-400">{r.margin?("by "+r.margin):""}</div>
+        </div>
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-center flex-1"><div className="font-bold text-sm" style={{color:c1?.cl}}>{c1?.nm}</div><div className="text-2xl font-bold gf">{r.t1s}<span className="text-sm text-gray-400">/{r.t1w}</span></div><div className="text-xs text-gray-400">({i1?.overs} ov)</div></div>
+          <div className="text-gray-500 font-bold gf">VS</div>
+          <div className="text-center flex-1"><div className="font-bold text-sm" style={{color:c2?.cl}}>{c2?.nm}</div><div className="text-2xl font-bold gf">{r.t2s}<span className="text-sm text-gray-400">/{r.t2w}</span></div><div className="text-xs text-gray-400">({i2?.overs} ov)</div></div>
+        </div>
+      </Card>
+      {km.length>0&&<Card><div className="text-sm font-bold gf text-yellow-400 mb-2">Key Moments</div>
+        {km.map((k,i)=><div key={i} className={"text-xs py-1.5 border-b border-gray-700/20 last:border-0 "+(k.type==="wicket"?"text-red-400":k.type==="century"?"text-yellow-400":"text-green-400")}>
+          <span className="text-gray-500 mr-2">{k.over}</span>{k.text}<span className="text-gray-500 ml-2">({k.score})</span>
+        </div>)}
+      </Card>}
+      <div className="flex gap-2">
+        <Btn onClick={()=>setPh("dash")} cl="#3b82f6" sz="lg" full>Continue</Btn>
+      </div>
+    </div>
+  </div>};
+
+/* === SEASON END === */
+const SeasonEnd=({gs,setGs,setPh})=>{
+  const allClubs=COUNTRIES.find(c=>c.id===gs.myCntry)?.clubs||[];
+  const st=gs.standings||{};const rows=allClubs.map(c=>({...c,...(st[c.id]||{w:0,l:0,pts:0,nrr:0,m:0})})).sort((a,b)=>b.pts-a.pts||(b.nrr||0)-(a.nrr||0));
+  const top4=rows.slice(0,4);const myPos=rows.findIndex(r=>r.id===gs.myClub)+1;
+  const allP=gs.players||[];const withStats=allP.filter(p=>p.ms&&p.ms.m>0);
+  const topScorer=[...withStats].sort((a,b)=>b.ms.r-a.ms.r)[0];
+  const topWickets=[...withStats].sort((a,b)=>b.ms.w-a.ms.w)[0];
+  const mvp=[...withStats].sort((a,b)=>{const ra=a.ms.ratings||[];const rb=b.ms.ratings||[];const aa=ra.length>0?ra.reduce((s,v)=>s+v,0)/ra.length:0;const ab=rb.length>0?rb.reduce((s,v)=>s+v,0)/rb.length:0;return ab-aa})[0];
+  const [phase,setPhase]=useState("table");
+
+  const nextSeason=()=>{
+    const ngs={...gs};ngs.season=(ngs.season||1)+1;
+    ngs.players.forEach(p=>{p.age++;p.form=50+rng.i(-10,10);p.mor=65+rng.i(-5,10);p.conf=50+rng.i(-5,5);p.fat=0;p.inj=0;p.injType=null;p.ms={r:0,w:0,m:0,bf:0,bb:0,rc:0,hs:0,bw:"0/0",f4:0,s6:0,ct:0,ratings:[]};p.seasonsAtClub=(p.seasonsAtClub||0)+1;
+      if(p.age<25){const growth=Math.round(p.dev*rng.f(0.5,1.2));p.bat=cl(p.bat+(p.role==="Batsman"||p.role==="WK-Batsman"||p.role==="All-Rounder"?growth:Math.round(growth*0.3)));p.bowl=cl(p.bowl+(BR.includes(p.role)||p.role==="All-Rounder"?growth:Math.round(growth*0.3)));p.fld=cl(p.fld+rng.i(0,2))}
+      else if(p.age>33){const decay=rng.i(1,3);p.bat=cl(p.bat-decay);p.bowl=cl(p.bowl-decay);p.fld=cl(p.fld-rng.i(0,2));p.fit=cl(p.fit-rng.i(1,3))}
+      p.ov=cl(Math.round(p.role==="Batsman"||p.role==="WK-Batsman"?p.bat*0.50+p.bowl*0.05+p.fld*0.15+p.fit*0.15+p.tmp*0.15:BR.includes(p.role)?p.bat*0.05+p.bowl*0.50+p.fld*0.15+p.fit*0.15+p.tmp*0.15:p.bat*0.25+p.bowl*0.25+p.fld*0.20+p.fit*0.15+p.tmp*0.15))});
+    ngs.players=ngs.players.filter(p=>p.age<=38||rng.c(0.3));
+    const country=COUNTRIES.find(c=>c.id===ngs.myCntry);if(country){country.clubs.forEach(club=>{const sq=ngs.squads[club.id]||[];while(sq.length<16){const role=rng.p(ROLES);const np=mp(ngs.myCntry,club.id,role,rng.i(42,68));np.age=rng.i(18,22);ngs.players.push(np);sq.push(np)}ngs.squads[club.id]=sq.slice(0,18)})}
+    const clubIds=country?country.clubs.map(c=>c.id):[];ngs.fixtures=mkFix(clubIds);ngs.standings={};clubIds.forEach(cid=>{ngs.standings[cid]={w:0,l:0,pts:0,nrr:0,m:0}});
+    ngs.news=["Season "+(ngs.season)+" has begun!","New players have joined the league."];
+    ngs.xi=autoXI(ngs.squads[ngs.myClub]||[]).map(p=>p.id);
+    setGs(ngs);setPh("dash")};
+
+  return <div className="min-h-screen p-4 flex flex-col items-center justify-center max-w-2xl mx-auto">
+    <div className="slide-up w-full space-y-4">
+      <div className="text-center"><div className="text-5xl mb-2">&#x1F3C6;</div><h1 className="text-3xl font-bold gf">Season {gs.season} Complete</h1><div className="text-gray-400 mt-1">You finished <span className={myPos<=4?"text-yellow-400":"text-gray-300"}>#{myPos}</span></div></div>
+      {phase==="table"&&<><Card><div className="text-sm font-bold gf text-blue-400 mb-2">Final Standings</div>
+        <table className="w-full text-xs"><thead><tr className="text-gray-400 border-b border-gray-700/30"><th className="text-left py-1 w-6">#</th><th className="text-left">Team</th><th className="text-center">W</th><th className="text-center">L</th><th className="text-center">Pts</th></tr></thead>
+          <tbody>{rows.map((r,i)=><tr key={r.id} className={r.id===gs.myClub?"bg-blue-500/10 font-bold":""}><td className="py-1">{i+1}</td><td style={{color:r.cl}}>{r.nm}</td><td className="text-center text-green-400">{r.w}</td><td className="text-center text-red-400">{r.l}</td><td className="text-center font-bold">{r.pts}</td></tr>)}</tbody></table>
+      </Card><Btn onClick={()=>setPhase("awards")} cl="#fbbf24" sz="lg" full>View Awards</Btn></>}
+      {phase==="awards"&&<><Card glow="#fbbf2444"><div className="text-center"><div className="text-sm font-bold gf text-yellow-400 mb-4">Season Awards</div>
+        <div className="space-y-4">
+          {[["&#x1F3C6; MVP",mvp],["&#x1F3CF; Golden Bat",topScorer],["&#x1F3AF; Golden Ball",topWickets]].map(([title,p])=>p&&<div key={title} className="flex items-center gap-3 p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/20">
+            <Face3D p={p} sz={48}/><div className="text-left flex-1"><div className="text-xs text-yellow-400" dangerouslySetInnerHTML={{__html:title}}/><div className="font-bold">{p.name}</div><div className="text-xs text-gray-400">{p.role} | {p.ms?.r||0} runs, {p.ms?.w||0} wkts</div></div><OvrBadge ov={p.ov}/></div>)}
+        </div>
+      </div></Card><Btn onClick={nextSeason} cl="#22c55e" sz="lg" full>Start Season {(gs.season||1)+1}</Btn></>}
+    </div>
+  </div>};
+
+/* === MAIN APP === */
+const App=()=>{
+  const [ph,setPh]=useState("title");
+  const [gs,setGs]=useState({season:1,myCntry:null,myClub:null,players:[],squads:{},fixtures:[],standings:{},xi:[],tactics:{bat:"balanced",field:"balanced",bowl:"balanced"},news:["Welcome to Cricket Manager 2026!"],lastResult:null,lastInn1:null,lastInn2:null,lastKeyMoments:[]});
+  const [selP,setSelP]=useState(null);
+  const [canLoad,setCanLoad]=useState(false);
+
+  useEffect(()=>{loadG().then(d=>{if(d)setCanLoad(true)})},[]);
+
+  const startNew=(cntry,clubId)=>{
+    const players=genP(cntry);const country=COUNTRIES.find(c=>c.id===cntry);
+    const clubs=country?.clubs||[];const clubIds=clubs.map(c=>c.id);
+    const{squads}=autoAuc(players,clubId,clubs);
+    const fixtures=mkFix(clubIds);
+    const standings={};clubIds.forEach(cid=>{standings[cid]={w:0,l:0,pts:0,nrr:0,m:0}});
+    const mySq=squads[clubId]||[];const xi=autoXI(mySq).map(p=>p.id);
+    const ngs={...gs,season:1,myCntry:cntry,myClub:clubId,players,squads,fixtures,standings,xi,news:["Season 1 begins! Good luck, manager.","Your squad has been assembled."]};
+    setGs(ngs);saveG(ngs);
+  };
+
+  const loadSave=async()=>{const d=await loadG();if(d){setGs(d);setPh("dash")}};
+
+  const allClubs=COUNTRIES.flatMap(c=>c.clubs);const myClub=allClubs.find(c=>c.id===gs.myClub);
+  const nextF=(gs.fixtures||[]).find(f=>!f.played&&(f.home===gs.myClub||f.away===gs.myClub));
+  const oppId=nextF?(nextF.home===gs.myClub?nextF.away:nextF.home):null;
+  const oppClub=oppId?allClubs.find(c=>c.id===oppId):null;
+
+  useEffect(()=>{if(gs.myClub&&ph==="dash")saveG(gs)},[gs,ph]);
+
+  const simOtherMatches=()=>{
+    const ngs={...gs};const fx=ngs.fixtures||[];const allC=COUNTRIES.find(c=>c.id===ngs.myCntry)?.clubs||[];
+    const currentRound=nextF?nextF.round:null;if(!currentRound)return ngs;
+    fx.filter(f=>f.round===currentRound&&!f.played&&f.home!==ngs.myClub&&f.away!==ngs.myClub).forEach(f=>{
+      const hSq=ngs.squads[f.home]||[];const aSq=ngs.squads[f.away]||[];
+      const hXI=autoXI(hSq);const aXI=autoXI(aSq);
+      const hStr=hXI.reduce((s,p)=>s+p.ov,0);const aStr=aXI.reduce((s,p)=>s+p.ov,0);
+      const hAdv=(hStr-aStr)/100+rng.f(-0.3,0.3);const hWin=rng.c(0.5+hAdv*0.3);
+      const s1=rng.i(110,200);const w1=rng.i(3,10);const s2=hWin?s1+rng.i(1,30):s1-rng.i(1,40);const w2=hWin?rng.i(2,8):10;
+      const winner=s2>s1?f.away:s2<s1?f.home:null;
+      f.played=true;f.result={t1:f.home,t2:f.away,t1s:s1,t1w:w1,t2s:s2,t2w:w2,winner,margin:winner===f.home?(s1-s2)+" runs":winner===f.away?(10-w2)+" wickets":"Tie"};
+      if(!ngs.standings)ngs.standings={};allC.forEach(c=>{if(!ngs.standings[c.id])ngs.standings[c.id]={w:0,l:0,pts:0,nrr:0,m:0}});
+      ngs.standings[f.home].m++;ngs.standings[f.away].m++;
+      if(winner===f.home){ngs.standings[f.home].w++;ngs.standings[f.home].pts+=2;ngs.standings[f.away].l++}
+      else if(winner===f.away){ngs.standings[f.away].w++;ngs.standings[f.away].pts+=2;ngs.standings[f.home].l++}
+      else{ngs.standings[f.home].pts+=1;ngs.standings[f.away].pts+=1}
+      [...hXI,...aXI].forEach(xp=>{const pi=ngs.players.findIndex(p=>p.id===xp.id);if(pi>=0){const won=winner===ngs.players[pi].club;const ps=simPS(ngs.players[pi],won);ngs.players[pi].ms=addMS(ngs.players[pi].ms||{r:0,w:0,m:0},ps);ngs.players[pi].form=cl(ngs.players[pi].form+(ps.rating>=7?rng.i(1,3):ps.rating<=4?rng.i(-3,-1):rng.i(-1,1)))}})
+    });
+    return ngs};
+
+  if(ph==="title")return <TitleScreen onNew={()=>setPh("country")} onLoad={loadSave} canLoad={canLoad}/>;
+  if(ph==="country")return <CountrySelect onSelect={(cntry)=>{setGs({...gs,myCntry:cntry});setPh("club")}}/>;
+  if(ph==="club")return <ClubSelect country={gs.myCntry} onBack={()=>setPh("country")} onSelect={(clubId)=>{startNew(gs.myCntry,clubId);setPh("reveal")}}/>;
+  if(ph==="reveal"){const mySq=gs.squads[gs.myClub]||[];return <SquadReveal squad={mySq} club={myClub} onContinue={()=>setPh("dash")}/>}
+  if(ph==="dash")return <Dashboard gs={gs} setGs={setGs} setPh={setPh} selP={selP} setSelP={setSelP}/>;
+  if(ph==="prematch"&&myClub&&oppClub)return <PreMatch gs={gs} setGs={setGs} setPh={(p)=>{if(p==="match"){const ngs=simOtherMatches();setGs(ngs);setPh(p)}else setPh(p)}} myClub={myClub} oppClub={oppClub}/>;
+  if(ph==="match")return <MatchScreen gs={gs} setGs={setGs} setPh={setPh}/>;
+  if(ph==="matchreport")return <MatchReport gs={gs} setPh={setPh}/>;
+  if(ph==="seasonend")return <SeasonEnd gs={gs} setGs={setGs} setPh={setPh}/>;
+  return <TitleScreen onNew={()=>setPh("country")} onLoad={loadSave} canLoad={canLoad}/>;
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+
+</script>
+</body>
+</html>
