@@ -34,3 +34,11 @@ input,select,button{font-family:'Quicksand',sans-serif}
 window.storage={async get(k){try{const v=localStorage.getItem(k);return v?{value:v}:null}catch{return null}},async set(k,v){try{localStorage.setItem(k,v);return true}catch{return false}}};
 </script>
 <script type="text/babel">
+const{useState,useEffect,useRef,useCallback,useMemo}=React;
+class R{constructor(s=42){this.s=s}n(){this.s=(this.s*16807)%2147483647;return(this.s-1)/2147483646}i(a,b){return Math.floor(this.n()*(b-a+1))+a}p(a){return a[this.i(0,a.length-1)]}sh(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=this.i(0,i);[r[i],r[j]]=[r[j],r[i]]}return r}c(p){return this.n()<p}f(a,b){return a+this.n()*(b-a)}}
+const rng=new R(Date.now()%99999);const cl=(v,mn=1,mx=99)=>Math.max(mn,Math.min(mx,Math.round(v)));let pid=1;
+const ROLES=["Batsman","Bowler (Fast)","Bowler (Spin)","Bowler (Medium)","All-Rounder","WK-Batsman"];
+const BR=["Bowler (Fast)","Bowler (Spin)","Bowler (Medium)"];
+const TRAITS=["Aggressive","Anchor","Finisher","Enforcer","Wily","Steady","Explosive","Classy","Gritty","Unorthodox"];
+const ri=(r)=>r==="Batsman"?"\u{1F3CF}":r==="WK-Batsman"?"\u{1F9E4}":BR.includes(r)?"\u{1F3AF}":"\u26A1";
+const ti=(ov)=>ov>=85?{c:"#ffd700",bg:"linear-gradient(135deg,#b8860b,#1a1a2e)"}:ov>=70?{c:"#3b82f6",bg:"linear-gradient(135deg,#1e3a5f,#1a1a2e)"}:ov>=55?{c:"#22c55e",bg:"linear-gradient(135deg,#14532d,#1a1a2e)"}:{c:"#94a3b8",bg:"linear-gradient(135deg,#334155,#1a1a2e)"};
