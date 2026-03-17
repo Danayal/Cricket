@@ -42,3 +42,317 @@ const BR=["Bowler (Fast)","Bowler (Spin)","Bowler (Medium)"];
 const TRAITS=["Aggressive","Anchor","Finisher","Enforcer","Wily","Steady","Explosive","Classy","Gritty","Unorthodox"];
 const ri=(r)=>r==="Batsman"?"\u{1F3CF}":r==="WK-Batsman"?"\u{1F9E4}":BR.includes(r)?"\u{1F3AF}":"\u26A1";
 const ti=(ov)=>ov>=85?{c:"#ffd700",bg:"linear-gradient(135deg,#b8860b,#1a1a2e)"}:ov>=70?{c:"#3b82f6",bg:"linear-gradient(135deg,#1e3a5f,#1a1a2e)"}:ov>=55?{c:"#22c55e",bg:"linear-gradient(135deg,#14532d,#1a1a2e)"}:{c:"#94a3b8",bg:"linear-gradient(135deg,#334155,#1a1a2e)"};
+const CN={
+lah:{f:["Babur","Shaheen","Fakhr","Haidar","Rizwaan","Salman","Hafeez","Rasheed","Shaan","Kamran"],l:["Azzam","Afridi","Zamaan","Aali","Akmal","Butt","Hafeez","Rasheed","Masood","Malik"]},
+kar:{f:["Sarfraaz","Imaam","Sharjeel","Asif","Mohd","Anwar","Rumaan","Mir","Danish","Aamir"],l:["Ahmeed","ul-Huq","Khaan","Aali","Shaah","Alam","Raees","Hameed","Aziz","Sindhi"]},
+isl:{f:["Shadab","Azhar","Faheem","Hasan","Asif","Amad","Hussain","Muneeb","Saif","Rohail"],l:["Khaan","Aali","Ashraaf","Nawaz","Raza","Butt","Abbasi","Meer","Qureshi","Mushtaq"]},
+pes:{f:["Wahab","Yasir","Shoaib","Sameen","Mohd","Imraan","Nasir","Junaid","Arshad","Akmal"],l:["Riaz","Shaah","Akhtar","Gul","Amir","Khaan","Wazir","Afridi","Yousafzai","Mehsud"]},
+que:{f:["Sarfraaz","Umar","Ahmed","Naseem","Anwar","Ahsan","Dawood","Jalat","Mir","Mohd"],l:["Nawaz","Akmal","Shaah","Raza","Baloch","Mengal","Kasi","Durrani","Kakar","Shahwani"]},
+mul:{f:["Rizwaan","Sohaib","Khushi","Shan","Mohd","Usman","Abbas","Shahnawaz","Ihsan","Bilawal"],l:["Masood","Maqsood","Shaah","Dahani","Nawaz","Qadir","Waseem","Tanvir","Bhatti","Qureshi"]},
+mum:{f:["Rohaan","Surya","Hardik","Jasprit","Ishaan","Tilak","Dewald","Tim","Akash","Arjun"],l:["Sharmaa","Yaadav","Pandiya","Bumra","Kishaan","Varmaa","Brevis","Daviid","Madhwal","Tendulkar"]},
+del:{f:["Rishab","Akshar","Prithvi","David","Kuldeep","Anrich","Mitchell","Lungi","Abishek","Lalit"],l:["Panth","Pattel","Shaaw","Warneer","Yaadav","Nortjee","Marshh","Ngidi","Porel","Singh"]},
+blr:{f:["Viraj","Rajat","Glenn","Faf","Josh","Mohd","Dinesh","Harshal","Wanindu","Shahbaz"],l:["Kohlii","Patidaar","Maxweil","duPless","Hazlwood","Siraaj","Karthiik","Pattel","Hasaranga","Ahmeed"]},
+che:{f:["Rutuuaj","Ravinder","Deepak","Devon","Moeen","Shivam","Maheesh","Ambati","Tushar","Ajinkya"],l:["Gaikwaad","Jadeeja","Chahaar","Conwey","Alii","Dubey","Theekshna","Rayuudu","Deshpandey","Gill"]},
+kol:{f:["Shreyas","Nitish","Andre","Sunil","Varun","Umesh","Venkatesh","Rinku","Shardul","Anukul"],l:["Aiyar","Raana","Russeil","Narinee","Chakravarthi","Yaadav","Iyyar","Singgh","Thaakur","Tomar"]},
+hyd:{f:["Bhuvnesh","Abhishek","Travis","Heinrich","Pat","Mohd","Washington","Rahul","Abdul","Mayank"],l:["Kumaar","Sharmaa","Heade","Klaasen","Cummings","Shaami","Sundarr","Tripathi","Samad","Agarwaal"]},
+syd:{f:["Pat","Steven","Moises","Josh","Sean","Daniel","Hayden","Ben","Chris","Jason"],l:["Cummings","Smithh","Henriquez","Phillipe","Abbotts","Hughes","Kerr","Dwarshuis","Tremain","Owen"]},
+mel:{f:["Aaron","Marcus","Shaun","Andre","Glenn","Nic","Tom","Sam","Mitch","James"],l:["Finchy","Stoiniss","Marshh","Russeil","Maxweil","Maddinsun","Rogers","Harpur","Perry","Harvey"]},
+bri:{f:["Usman","Marnus","Mitch","Ben","Josh","Matt","Michael","Jimmy","Jack","Max"],l:["Khawajaa","Labuschangee","Swepsun","Laughlan","Brownne","Rensha","Neserr","Peirsun","Wildermuth","Heazlett"]},
+per:{f:["Mitch","Cameron","Andrew","Jhye","Ashton","Jason","Liam","Fawad","Hilton","Lance"],l:["Marshh","Bancroft","Tyee","Richardsun","Turnerr","Behrendorf","Livingstonn","Ahmeed","Cartwright","Hardiee"]},
+ade:{f:["Travis","Alex","Rasheed","Adam","Peter","Jake","Harry","Thomas","Wes","Ben"],l:["Heade","Careey","Khaan","Zampaa","Siddle","Weatherald","Nielson","Kelly","Agar","Johnsun"]},
+hob:{f:["Tim","Ben","Nathan","Riley","Matthew","Caleb","Jordan","Beau","Mac","Paddy"],l:["Painee","McDermottt","Elliss","Meredithh","Wadee","Jewell","Silkk","Websterr","Wrightt","Dolannn"]},
+lon:{f:["Joe","Sam","Jason","Dawid","Tom","Saqib","Jordan","Chris","Daniel","Steven"],l:["Roote","Currann","Roye","Malaan","Currann","Mahmouud","Coxe","Jordann","Lawrence","Halees"]},
+man:{f:["Jos","Phil","Liam","Matt","Luke","Tom","Richard","Saqib","Josh","Keaton"],l:["Buttlaar","Saltt","Livingstonn","Parkinsun","Woodd","Hartlyy","Gleesun","Mahmouud","Tonguee","Jackss"]},
+bir:{f:["Moeen","Chris","Liam","Adam","Olly","Dom","Will","Pat","Michael","Ethan"],l:["Alii","Woakess","Norriss","Milnee","Stonee","Sibleyy","Rhodess","Brownne","Burgess","Hain"]},
+lee:{f:["Harry","Jonny","Adil","David","Jordan","Mark","Matthew","Gary","Tim","Dom"],l:["Brookee","Bairstoww","Rashiid","Willeyy","Thompsun","Woodd","Fisheer","Ballancee","Bressnan","Lyth"]},
+sou:{f:["James","Liam","Kyle","Chris","Brad","Keith","Tom","Felix","Craig","John"],l:["Vinse","Dawsun","Abbottt","Jordann","Wheal","Barkerr","Alsop","Fulleer","Organ","Bell"]},
+ova:{f:["Jamie","Ollie","Tom","Ben","Rehan","Sam","Dane","Dan","Amar","Gus"],l:["Overtonn","Popee","Currenn","Foakess","Ahmadd","Currann","Vilass","Worrall","Virdi","Dunnnn"]},
+joh:{f:["Temba","Aiden","Rassie","Quinton","Kagiso","Anrich","Marco","Reeza","Gerald","Dewald"],l:["Bavuma","Markram","vanDerDuss","deKock","Rabada","Nortje","Jansen","Hendricks","Coetzee","Miller"]},
+cap:{f:["Kyle","Lungi","Keshav","Wayne","Pieter","George","Tony","Dane","Jason","Sisanda"],l:["Verreynne","Ngidi","Maharaj","Parnell","Malan","Linde","dZorzi","Paterson","Smith","Stuurman"]},
+dur:{f:["Andile","Sarel","Rilee","Prenelan","Dwaine","Ottneil","Robbie","Grant","Khaya","Keith"],l:["Phehlukwayo","Erwee","Rossouw","Subrayen","Pretorius","Baartman","Frylinck","Roelofsen","Zondo","Williams"]},
+pre:{f:["AB","Faf","Dale","Hashim","Jacques","Morne","Vernon","Imran","Tabraiz","Migael"],l:["deVilliers","duPlessis","Steyn","Amla","Kallis","Morkel","Philander","Tahir","Shamsi","deBruyn"]},
+blo:{f:["Patrick","Duanne","Sisanda","Raynard","Matthew","Evan","Wandile","Aubrey","Lesiba","Nicky"],l:["Kruger","Olivier","Magala","vanTonder","Breetzke","Jones","Makwetu","Swanepoel","Ngoepe","McLaren"]},
+por:{f:["Simon","Junior","Diego","Tristan","Sinethemba","Lifa","Wihan","Tshepo","Matthew","Jason"],l:["Harmer","Dala","Rosier","Stubbs","Qeshile","Ntanzi","Lubbe","Moreki","Arnold","Sipamla"]},
+bri2:{f:["Nicholas","Jason","Shimron","Roston","Kyle","Shai","Akeal","Alzarri","Odean","Yannic"],l:["Pooran","Holder","Hetmyer","Chase","Mayers","Hope","Hosein","Joseph","Smith","Cariah"]},
+jam:{f:["Andre","Chris","Rovman","Brandon","Fabian","Oshane","Romario","Kennar","Javelle","Jamie"],l:["Russell","Gayle","Powell","King","Allen","Thomas","Shepherd","Lewis","Glenn","Cottrell"]},
+tri:{f:["Kieron","Dwayne","Lendl","Sunil","Darren","Denesh","Jayden","Terrence","Khary","Imran"],l:["Pollard","Bravo","Simmons","Narine","Bravo","Ramdin","Seales","Hinds","Pierre","Rampaul"]},
+gua:{f:["Shimron","Chanderpaul","Tagenarine","Keemo","Veerasammy","Gudakesh","Devendra","Romario","Clinton","Sherfane"],l:["Hetmyer","Chanderpaul","Chanderpaul","Paul","Permaul","Motie","Bishoo","Shepherd","Pestano","Rutherford"]},
+bar:{f:["Kraigg","Shane","Jomel","Joshua","Chemar","Shamarh","Nyeem","Shai","Tino","Kemar"],l:["Brathwaite","Dowrich","Warrican","Bishop","Holder","Brooks","Young","Hope","Best","Roach"]},
+ant:{f:["Hayden","Alzarri","Mikyle","Kofi","Rahkeem","Devon","Nkrumah","Justin","Tyrone","Jahmar"],l:["Walsh","Joseph","Louis","James","Cornwall","Thomas","Bonner","Greaves","Theophile","Hamilton"]},
+auc:{f:["Kane","Trent","Martin","Kyle","Mitchell","Devon","Glenn","Mark","Adam","Colin"],l:["Williamson","Boult","Guptill","Jamieson","Santner","Conway","Phillips","Chapman","Milne","Munro"]},
+wel:{f:["Tim","Jimmy","Finn","Ben","Michael","Matt","Hamish","Luke","Rachin","Ajaz"],l:["Southee","Neesham","Allen","Sears","Bracewell","Henry","Bennett","Ronchi","Ravindra","Patel"]},
+chr:{f:["Henry","Matt","Daryl","Todd","Chad","Andrew","Kyle","Jack","Will","Leo"],l:["Nicholls","Henry","Mitchell","Astle","Bowes","Ellis","Mills","Boyle","Carter","Smith"]},
+ham:{f:["Ross","Neil","BJ","Corey","Dane","Zak","Lockie","Tom","Sean","Brett"],l:["Taylor","Broom","Watling","Anderson","Cleaver","Crawford","Ferguson","Bruce","Solia","Lee"]},
+dun:{f:["Michael","Nathan","Josh","Anaru","Matt","Jake","Hamish","Dale","Warren","Jesse"],l:["Rippon","McCullum","Clarkson","Kitchen","Bacon","Gibson","Rutherford","Phillips","Barnes","Ryder"]},
+nap:{f:["Ajaz","Rachin","Ben","Blair","Adam","Doug","Greg","Carl","Robert","Daniel"],l:["Patel","Ravindra","Lister","Tickner","Parore","Bracewell","Loveridge","Hart","Small","Vettori"]},
+col:{f:["Charith","Pathum","Kusal","Wanindu","Dhananjaya","Maheesh","Dasun","Dunith","Kamindu","Chamika"],l:["Asalanka","Nissanka","Mendis","Hasaranga","deSilva","Theekshana","Shanaka","Wellalage","Mendis","Fernando"]},
+kan:{f:["Angelo","Dimuth","Dushmantha","Ramesh","Dilruwan","Akila","Oshada","Niroshan","Suranga","Isuru"],l:["Mathews","Karunaratne","Chameera","Mendis","Perera","Dananjaya","Fernando","Dickwella","Lakmal","Udana"]},
+gal:{f:["Lasith","Nuwan","Thisara","Shehan","Kasun","Dhanushka","Binura","Lakshan","Pramod","Ishan"],l:["Malinga","Kulasekara","Perera","Jayasuriya","Rajitha","Gunathilaka","Fernando","Sandakan","Madushan","Pathirana"]},
+dam:{f:["Mahela","Kumar","Tillakaratne","Muttiah","Sanath","Aravinda","Chaminda","Rangana","Upul","Nuwan"],l:["Jayawardene","Sangakkara","Dilshan","Muralitharan","Jayasuriya","deSilva","Vaas","Herath","Tharanga","Pradeep"]},
+mat:{f:["Prabath","Nishan","Sadeera","Oshada","Lahiru","Kasun","Vishwa","Dhananjaya","Asitha","Ramesh"],l:["Jayasuriya","Madushka","Samarawickrama","Fernando","Kumara","Chamika","Fernando","Lakshan","Fernando","Prasanna"]},
+jaf:{f:["Bhanuka","Kusal","Avishka","Sahan","Ishan","Ashen","Jeffrey","Kamindu","Lahiru","Dunith"],l:["Rajapaksa","Perera","Fernando","Arachchige","Jayaratne","Bandara","Vandersay","Mendis","Madushanka","Wellalage"]},
+};
+const COUNTRIES=[
+{id:"pak",name:"Pakistan",flag:"\u{1F1F5}\u{1F1F0}",league:"PSL",clubs:[
+{id:"lah",nm:"Lahore Lions",cl:"#22c55e",pt:"flat",city:"Lahore",std:"Gaddafi Stadium",cap:27000},
+{id:"kar",nm:"Karachi Corsairs",cl:"#3b82f6",pt:"balanced",city:"Karachi",std:"National Stadium",cap:34000},
+{id:"isl",nm:"Islamabad Eagles",cl:"#ef4444",pt:"pace",city:"Islamabad",std:"Rawalpindi Stadium",cap:15000},
+{id:"pes",nm:"Peshawar Panthers",cl:"#f59e0b",pt:"pace",city:"Peshawar",std:"Arbab Niaz Stadium",cap:18000},
+{id:"que",nm:"Quetta Guardians",cl:"#a855f7",pt:"spin",city:"Quetta",std:"Bugti Stadium",cap:12000},
+{id:"mul",nm:"Multan Monarchs",cl:"#06b6d4",pt:"spin",city:"Multan",std:"Multan Cricket Stadium",cap:35000}]},
+{id:"ind",name:"India",flag:"\u{1F1EE}\u{1F1F3}",league:"IPL",clubs:[
+{id:"mum",nm:"Mumbai Strikeforce",cl:"#3b82f6",pt:"flat",city:"Mumbai",std:"Wankhede Stadium",cap:33000},
+{id:"del",nm:"Delhi Dynamos",cl:"#ef4444",pt:"balanced",city:"Delhi",std:"Arun Jaitley Stadium",cap:41000},
+{id:"blr",nm:"Bangalore Bolts",cl:"#a855f7",pt:"balanced",city:"Bangalore",std:"Chinnaswamy Stadium",cap:40000},
+{id:"che",nm:"Chennai Titans",cl:"#f59e0b",pt:"spin",city:"Chennai",std:"Chepauk Stadium",cap:50000},
+{id:"kol",nm:"Kolkata Thunders",cl:"#8b5cf6",pt:"spin",city:"Kolkata",std:"Eden Gardens",cap:68000},
+{id:"hyd",nm:"Hyderabad Hawks",cl:"#06b6d4",pt:"flat",city:"Hyderabad",std:"Rajiv Gandhi Stadium",cap:55000}]},
+{id:"aus",name:"Australia",flag:"\u{1F1E6}\u{1F1FA}",league:"BBL",clubs:[
+{id:"syd",nm:"Sydney Storm",cl:"#3b82f6",pt:"pace",city:"Sydney",std:"SCG",cap:48000},
+{id:"mel",nm:"Melbourne Renegades",cl:"#ef4444",pt:"balanced",city:"Melbourne",std:"MCG",cap:100000},
+{id:"bri",nm:"Brisbane Blaze",cl:"#22c55e",pt:"pace",city:"Brisbane",std:"The Gabba",cap:42000},
+{id:"per",nm:"Perth Wolves",cl:"#f59e0b",pt:"pace",city:"Perth",std:"Optus Stadium",cap:60000},
+{id:"ade",nm:"Adelaide Arrows",cl:"#a855f7",pt:"flat",city:"Adelaide",std:"Adelaide Oval",cap:53000},
+{id:"hob",nm:"Hobart Gales",cl:"#06b6d4",pt:"balanced",city:"Hobart",std:"Bellerive Oval",cap:20000}]},
+{id:"eng",name:"England",flag:"\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}",league:"The Hundred",clubs:[
+{id:"lon",nm:"London Lions",cl:"#ef4444",pt:"balanced",city:"London",std:"Lords",cap:30000},
+{id:"man",nm:"Manchester Reds",cl:"#3b82f6",pt:"pace",city:"Manchester",std:"Old Trafford",cap:26000},
+{id:"bir",nm:"Birmingham Blades",cl:"#f59e0b",pt:"balanced",city:"Birmingham",std:"Edgbaston",cap:25000},
+{id:"lee",nm:"Leeds Lancers",cl:"#22c55e",pt:"pace",city:"Leeds",std:"Headingley",cap:18000},
+{id:"sou",nm:"Southampton Sharks",cl:"#06b6d4",pt:"flat",city:"Southampton",std:"Rose Bowl",cap:25000},
+{id:"ova",nm:"London Knights",cl:"#a855f7",pt:"spin",city:"London",std:"The Oval",cap:26000}]},
+{id:"rsa",name:"South Africa",flag:"\u{1F1FF}\u{1F1E6}",league:"SA20",clubs:[
+{id:"joh",nm:"Johannesburg Giants",cl:"#ffd700",pt:"pace",city:"Johannesburg",std:"Wanderers",cap:34000},
+{id:"cap",nm:"Cape Town Sixes",cl:"#22c55e",pt:"balanced",city:"Cape Town",std:"Newlands",cap:25000},
+{id:"dur",nm:"Durban Dolphins",cl:"#06b6d4",pt:"flat",city:"Durban",std:"Kingsmead",cap:25000},
+{id:"pre",nm:"Pretoria Capitals",cl:"#3b82f6",pt:"pace",city:"Pretoria",std:"SuperSport Park",cap:22000},
+{id:"blo",nm:"Bloemfontein Knights",cl:"#ef4444",pt:"balanced",city:"Bloemfontein",std:"Mangaung Oval",cap:15000},
+{id:"por",nm:"PE Warriors",cl:"#a855f7",pt:"flat",city:"Gqeberha",std:"St Georges Park",cap:19000}]},
+{id:"wi",name:"West Indies",flag:"\u{1F3DD}\u{FE0F}",league:"CPL",clubs:[
+{id:"bri2",nm:"Barbados Tridents",cl:"#3b82f6",pt:"flat",city:"Bridgetown",std:"Kensington Oval",cap:15000},
+{id:"jam",nm:"Jamaica Tallawahs",cl:"#22c55e",pt:"pace",city:"Kingston",std:"Sabina Park",cap:20000},
+{id:"tri",nm:"Trinidad Titans",cl:"#ef4444",pt:"balanced",city:"Port of Spain",std:"Queens Park Oval",cap:25000},
+{id:"gua",nm:"Guyana Warriors",cl:"#f59e0b",pt:"spin",city:"Georgetown",std:"Providence Stadium",cap:15000},
+{id:"bar",nm:"St Lucia Kings",cl:"#a855f7",pt:"balanced",city:"Gros Islet",std:"Daren Sammy Ground",cap:15000},
+{id:"ant",nm:"Antigua Hawksbills",cl:"#06b6d4",pt:"flat",city:"St Johns",std:"Sir Vivian Richards",cap:10000}]},
+{id:"nz",name:"New Zealand",flag:"\u{1F1F3}\u{1F1FF}",league:"Super Smash",clubs:[
+{id:"auc",nm:"Auckland Aces",cl:"#1e3a5f",pt:"pace",city:"Auckland",std:"Eden Park",cap:50000},
+{id:"wel",nm:"Wellington Firebirds",cl:"#f59e0b",pt:"balanced",city:"Wellington",std:"Basin Reserve",cap:12000},
+{id:"chr",nm:"Canterbury Kings",cl:"#ef4444",pt:"pace",city:"Christchurch",std:"Hagley Oval",cap:18000},
+{id:"ham",nm:"Northern Knights",cl:"#22c55e",pt:"balanced",city:"Hamilton",std:"Seddon Park",cap:10000},
+{id:"dun",nm:"Otago Volts",cl:"#a855f7",pt:"flat",city:"Dunedin",std:"University Oval",cap:6000},
+{id:"nap",nm:"Central Stags",cl:"#3b82f6",pt:"spin",city:"Napier",std:"McLean Park",cap:10000}]},
+{id:"sl",name:"Sri Lanka",flag:"\u{1F1F1}\u{1F1F0}",league:"LPL",clubs:[
+{id:"col",nm:"Colombo Strikers",cl:"#3b82f6",pt:"flat",city:"Colombo",std:"R Premadasa Stadium",cap:35000},
+{id:"kan",nm:"Kandy Falcons",cl:"#22c55e",pt:"spin",city:"Kandy",std:"Pallekele Stadium",cap:35000},
+{id:"gal",nm:"Galle Gladiators",cl:"#ef4444",pt:"spin",city:"Galle",std:"Galle International",cap:35000},
+{id:"dam",nm:"Dambulla Sixers",cl:"#f59e0b",pt:"flat",city:"Dambulla",std:"Rangiri Stadium",cap:30000},
+{id:"mat",nm:"Matara Tuskers",cl:"#a855f7",pt:"balanced",city:"Matara",std:"Uyanwatta Stadium",cap:10000},
+{id:"jaf",nm:"Jaffna Kings",cl:"#06b6d4",pt:"spin",city:"Jaffna",std:"Duraiappah Stadium",cap:20000}]},
+];
+const NICKS=["The Wall","Boom","Magic","Hurricane","Ice","Flash","Ghost","Thunder","Cobra","Rocket","Blaze","Wizard","Hawk","Storm"];
+const BIO_Y=["A prodigious talent from local cricket.","Youth academy graduate with raw ability.","Teenage sensation tipped for stardom."];
+const BIO_P=["Established international performer.","Consistent match-winner.","Key player in the squad."];
+const BIO_V=["Veteran campaigner with years of experience.","Seasoned pro who leads by example.","Wily old fox who knows every trick."];
+const FP={a:[{x:25,y:15},{x:75,y:15},{x:10,y:40},{x:50,y:12},{x:90,y:40},{x:30,y:70},{x:70,y:70},{x:50,y:85},{x:15,y:85}],d:[{x:20,y:25},{x:80,y:25},{x:15,y:50},{x:50,y:20},{x:85,y:50},{x:25,y:75},{x:75,y:75},{x:50,y:90},{x:40,y:60}],b:[{x:22,y:20},{x:78,y:20},{x:12,y:45},{x:50,y:15},{x:88,y:45},{x:28,y:72},{x:72,y:72},{x:50,y:88},{x:50,y:55}]};
+const CHEM_PAIRS=[["outgoing","outgoing",7],["outgoing","creative",6],["outgoing","competitive",4],["competitive","competitive",5],["competitive","loyal",6],["creative","creative",7],["loyal","loyal",8],["reserved","reserved",5],["reserved","loyal",4],["reserved","competitive",-1],["outgoing","reserved",1],["creative","competitive",2]];
+const WEATHER=["Clear","Cloudy","Overcast","Drizzle","Rain","Humid"];
+const INJURY_TYPES=[{id:"hamstring",nm:"Hamstring Strain",dur:[1,3]},{id:"shoulder",nm:"Shoulder Injury",dur:[2,4]},{id:"back",nm:"Lower Back Spasm",dur:[1,3]},{id:"ankle",nm:"Ankle Sprain",dur:[2,5]},{id:"groin",nm:"Groin Strain",dur:[2,4]},{id:"finger",nm:"Finger Fracture",dur:[3,6]},{id:"side",nm:"Side Strain",dur:[2,4]},{id:"calf",nm:"Calf Tear",dur:[2,4]}];
+
+/* === PLAYER GEN === */
+function mp(ctry,clubId,role,tov){
+  const c=COUNTRIES.find(x=>x.id===ctry);const age=role&&tov>78?rng.i(24,32):rng.i(18,37);const ov=tov||rng.i(42,88);
+  let bat,bowl;if(role==="Batsman"||role==="WK-Batsman"){bat=cl(ov+rng.i(0,12));bowl=cl(rng.i(8,35))}else if(BR.includes(role)){bat=cl(rng.i(8,40));bowl=cl(ov+rng.i(0,12))}else{bat=cl(ov+rng.i(-8,6));bowl=cl(ov+rng.i(-8,6))}
+  const fld=cl(ov+rng.i(-12,8)),fit=cl(rng.i(55,96)),tmp=cl(rng.i(30,96));const pot=cl(age<24?ov+rng.i(8,25):ov+rng.i(0,8));
+  const overall=cl(Math.round(role==="Batsman"||role==="WK-Batsman"?bat*0.50+bowl*0.05+fld*0.15+fit*0.15+tmp*0.15:BR.includes(role)?bat*0.05+bowl*0.50+fld*0.15+fit*0.15+tmp*0.15:bat*0.25+bowl*0.25+fld*0.20+fit*0.15+tmp*0.15));
+  const price=overall>=88?18:overall>=78?10:overall>=66?5:overall>=50?2:1;
+  const dev=age<=23?rng.i(3,8):age<=28?rng.i(1,4):rng.i(0,2);const trait=rng.p(TRAITS);const nick=overall>=80?rng.p(NICKS):null;
+  const bio=age<=22?rng.p(BIO_Y):age>=32?rng.p(BIO_V):rng.p(BIO_P);
+  const cn2=CN[clubId];const fn=cn2?rng.p(cn2.f):"Player";const ln=cn2?rng.p(cn2.l):"Unknown";
+  const lead=cl(rng.i(20,95));const loyal=rng.i(40,90);const clique=rng.p(["outgoing","reserved","competitive","creative","loyal"]);
+  const arm=rng.c(0.75)?"Right":"Left";
+  let bowlStyle="";
+  if(role==="Bowler (Fast)")bowlStyle=rng.p(["Fast","Fast-Medium","Express"]);
+  else if(role==="Bowler (Medium)")bowlStyle=rng.p(["Medium-Fast","Medium","Swing"]);
+  else if(role==="Bowler (Spin)")bowlStyle=arm==="Right"?rng.p(["Off-Spin","Leg-Spin"]):rng.p(["Orthodox","Wrist-Spin"]);
+  else if(role==="All-Rounder")bowlStyle=arm==="Right"?rng.p(["Fast-Medium","Medium","Off-Spin"]):rng.p(["Fast-Medium","Orthodox","Swing"]);
+  const isPace=["Fast","Fast-Medium","Express","Medium-Fast","Medium","Swing"].includes(bowlStyle);
+  const bsk={power:cl(bat+rng.i(-12,12)),timing:cl(bat+rng.i(-10,10)),running:cl(rng.i(30,90)),vsPace:cl(bat+rng.i(-15,8)),vsSpin:cl(bat+rng.i(-15,8)),footwork:cl(bat+rng.i(-10,10))};
+  let wsk;
+  if(isPace)wsk={pace:cl(bowl+rng.i(-8,12)),swing:cl(bowl+rng.i(-15,10)),seam:cl(bowl+rng.i(-12,10)),bouncer:cl(bowl+rng.i(-10,15)),yorker:cl(bowl+rng.i(-15,10)),accuracy:cl(bowl+rng.i(-10,10))};
+  else wsk={flight:cl(bowl+rng.i(-8,12)),turn:cl(bowl+rng.i(-10,15)),variation:cl(bowl+rng.i(-12,12)),guile:cl(bowl+rng.i(-10,10)),armBall:cl(bowl+rng.i(-15,10)),accuracy:cl(bowl+rng.i(-10,10))};
+  const fsk={catching:cl(fld+rng.i(-10,10)),throwing:cl(fld+rng.i(-12,8)),reflexes:cl(fld+rng.i(-8,12)),ground:cl(fld+rng.i(-10,10))};
+  const face={skin:rng.p(["#8d5524","#c68642","#e0ac69","#f1c27d","#ffdbac","#d4a574","#6b4226","#3b2219","#f0c8a0","#deb887"]),
+    hair:rng.p(["#1a1a1a","#3d2314","#6b3a2a","#8b4513","#2c1608","#4a3728","#d4a76a","#c4721a"]),
+    hs:rng.i(0,7),es:rng.f(0.7,1.2),nw:rng.f(0.7,1.3),mw:rng.f(0.8,1.2),jw:rng.f(0.85,1.15),bt:rng.f(0.6,1.4),bd:age>=22?rng.i(0,4):0,ex:rng.i(0,3)};
+  let career=null;
+  if(age>=22){const seasons=Math.max(1,age-19);const mPerS=rng.i(8,14);const totalM=seasons*mPerS;
+    const isBt=role==="Batsman"||role==="WK-Batsman"||role==="All-Rounder";const isBw=BR.includes(role)||role==="All-Rounder";
+    let cRuns=0,cWkts=0,cHS=0,cBest="0/0",cAvg=0,cSR=0,cEco=0;
+    if(isBt){const avgR=bat*0.35+rng.f(-5,10);cRuns=Math.round(totalM*avgR);cHS=Math.round(avgR*2.5+rng.i(10,40));cAvg=+(cRuns/Math.max(1,totalM)).toFixed(1);cSR=Math.round(110+bat*0.6+rng.i(-15,20))}
+    if(isBw){const avgW=bowl*0.015+rng.f(-0.2,0.5);cWkts=Math.round(totalM*avgW);const bW=Math.min(6,Math.round(avgW*3+rng.i(0,2)));cBest=bW+"/"+(bW*6+rng.i(-5,15));cEco=+(6+((100-bowl)/100)*4+rng.f(-0.5,1)).toFixed(1)}
+    career={matches:totalM,seasons,runs:cRuns,wkts:cWkts,hs:cHS,best:cBest,avg:cAvg,sr:cSR,eco:cEco}}
+  return{id:pid++,name:fn+" "+ln,nat:ctry,club:clubId,role,age,bat,bowl,fld,fit,tmp,ov:overall,pot,price,dev,form:50+rng.i(-8,8),mor:65+rng.i(-5,10),inj:0,injType:null,conf:50,fat:0,hap:70+rng.i(-10,10),cYr:rng.i(1,3),trait,nick,bio,lead,loyal,clique,seasonsAtClub:0,arm,bowlStyle,bsk,wsk,fsk,face,career,ms:{r:0,w:0,m:0,bf:0,bb:0,rc:0,hs:0,bw:"0/0",f4:0,s6:0,ct:0,ratings:[]}}}
+function genP(ctryId){const c=COUNTRIES.find(x=>x.id===ctryId);if(!c)return[];const all=[];c.clubs.forEach(club=>{for(let i=0;i<18;i++){const role=i<4?"Batsman":i<5?"WK-Batsman":i<8?"Bowler (Fast)":i<10?"Bowler (Spin)":i<12?"Bowler (Medium)":"All-Rounder";all.push(mp(ctryId,club.id,role,rng.i(40+i*2,75+i)))}});return all}
+function getBatArch(p){if(!p)return"";const{power,timing,vsPace,vsSpin,footwork}=p.bsk||{};
+  if((power||0)>=75&&(timing||0)<60)return"Power Hitter";if((timing||0)>=75&&(footwork||0)>=70)return"Stroke Maker";
+  if((vsSpin||0)>=75)return"Spin Specialist";if((vsPace||0)>=75)return"Pace Handler";if(p.bat>=70)return"Complete Batsman";return"Developing Bat"}
+function getBowlArch(p){if(!p||!p.wsk)return"";const w=p.wsk;const isPc=["Fast","Fast-Medium","Express","Medium-Fast","Medium","Swing"].includes(p.bowlStyle);
+  if(isPc){if((w.pace||0)>=80)return"Express Pace";if((w.swing||0)>=75)return"Swing Master";if((w.yorker||0)>=75)return"Death Specialist";return"Stock Pacer"}
+  if((w.turn||0)>=80)return"Big Turner";if((w.variation||0)>=80)return"Mystery Spinner";return"Stock Spinner"}
+
+/* === 3D FACE COMPONENT === */
+const Face3D=({p,sz=48})=>{
+  const f=p?.face||{skin:"#deb887",hair:"#1a1a1a",hs:0,es:1,nw:1,mw:1,jw:1,bt:1,bd:0,ex:0};
+  const r=sz/2;const cx=sz/2;const cy=sz/2;const id=p?.id||0;
+  return React.createElement("svg",{width:sz,height:sz,viewBox:"0 0 "+sz+" "+sz},
+    React.createElement("defs",null,
+      React.createElement("radialGradient",{id:"sg"+id,cx:"40%",cy:"35%",r:"55%"},
+        React.createElement("stop",{offset:"0%",stopColor:f.skin,stopOpacity:"1"}),
+        React.createElement("stop",{offset:"100%",stopColor:f.skin,stopOpacity:"0.7"})),
+      React.createElement("radialGradient",{id:"sh"+id,cx:"50%",cy:"30%",r:"60%"},
+        React.createElement("stop",{offset:"0%",stopColor:"rgba(255,255,255,0.15)"}),
+        React.createElement("stop",{offset:"100%",stopColor:"rgba(0,0,0,0.1)"})),
+      React.createElement("filter",{id:"fs"+id},
+        React.createElement("feDropShadow",{dx:"0",dy:"1",stdDeviation:"1",floodOpacity:"0.3"}))),
+    // Ears
+    React.createElement("ellipse",{cx:cx-r*0.42,cy:cy+r*0.05,rx:r*0.12,ry:r*0.18,fill:f.skin,opacity:"0.85"}),
+    React.createElement("ellipse",{cx:cx+r*0.42,cy:cy+r*0.05,rx:r*0.12,ry:r*0.18,fill:f.skin,opacity:"0.85"}),
+    // Head
+    React.createElement("ellipse",{cx:cx,cy:cy,rx:r*0.42*f.jw,ry:r*0.48,fill:"url(#sg"+id+")",filter:"url(#fs"+id+")"}),
+    React.createElement("ellipse",{cx:cx,cy:cy,rx:r*0.42*f.jw,ry:r*0.48,fill:"url(#sh"+id+")"}),
+    // Hair - varies by style
+    f.hs<=1&&React.createElement("ellipse",{cx:cx,cy:cy-r*0.22,rx:r*0.44,ry:r*0.28,fill:f.hair}),
+    f.hs===2&&React.createElement("rect",{x:cx-r*0.43,y:cy-r*0.5,width:r*0.86,height:r*0.35,rx:r*0.1,fill:f.hair}),
+    f.hs===3&&React.createElement("ellipse",{cx:cx,cy:cy-r*0.25,rx:r*0.46,ry:r*0.32,fill:f.hair}),
+    f.hs>=5&&React.createElement("circle",{cx:cx,cy:cy-r*0.15,r:r*0.47,fill:"none",stroke:f.hair,strokeWidth:r*0.12}),
+    // Eyebrows
+    React.createElement("line",{x1:cx-r*0.22,y1:cy-r*0.12,x2:cx-r*0.08,y2:cy-r*0.15,stroke:f.hair,strokeWidth:r*0.04*f.bt,strokeLinecap:"round"}),
+    React.createElement("line",{x1:cx+r*0.08,y1:cy-r*0.15,x2:cx+r*0.22,y2:cy-r*0.12,stroke:f.hair,strokeWidth:r*0.04*f.bt,strokeLinecap:"round"}),
+    // Eyes with shine
+    React.createElement("ellipse",{cx:cx-r*0.15,cy:cy,rx:r*0.07*f.es,ry:r*0.055*f.es,fill:"white"}),
+    React.createElement("circle",{cx:cx-r*0.15,cy:cy,r:r*0.04*f.es,fill:"#1a1a1a"}),
+    React.createElement("circle",{cx:cx-r*0.13,cy:cy-r*0.02,r:r*0.015,fill:"white"}),
+    React.createElement("ellipse",{cx:cx+r*0.15,cy:cy,rx:r*0.07*f.es,ry:r*0.055*f.es,fill:"white"}),
+    React.createElement("circle",{cx:cx+r*0.15,cy:cy,r:r*0.04*f.es,fill:"#1a1a1a"}),
+    React.createElement("circle",{cx:cx+r*0.17,cy:cy-r*0.02,r:r*0.015,fill:"white"}),
+    // Nose
+    React.createElement("line",{x1:cx,y1:cy+r*0.02,x2:cx,y2:cy+r*0.12,stroke:f.skin,strokeWidth:r*0.03,opacity:"0.4"}),
+    // Mouth - expression varies
+    f.ex===0&&React.createElement("path",{d:"M"+(cx-r*0.1*f.mw)+" "+(cy+r*0.22)+" Q"+cx+" "+(cy+r*0.3)+" "+(cx+r*0.1*f.mw)+" "+(cy+r*0.22),fill:"none",stroke:"#c0392b",strokeWidth:r*0.03}),
+    f.ex===1&&React.createElement("line",{x1:cx-r*0.08*f.mw,y1:cy+r*0.24,x2:cx+r*0.08*f.mw,y2:cy+r*0.24,stroke:"#c0392b",strokeWidth:r*0.03,strokeLinecap:"round"}),
+    f.ex>=2&&React.createElement("ellipse",{cx:cx,cy:cy+r*0.24,rx:r*0.06*f.mw,ry:r*0.04,fill:"#c0392b",opacity:"0.7"}),
+    // Beard
+    f.bd>=2&&React.createElement("path",{d:"M"+(cx-r*0.25)+" "+(cy+r*0.12)+" Q"+(cx-r*0.3)+" "+(cy+r*0.35)+" "+cx+" "+(cy+r*0.45)+" Q"+(cx+r*0.3)+" "+(cy+r*0.35)+" "+(cx+r*0.25)+" "+(cy+r*0.12),fill:f.hair,opacity:f.bd>=3?"0.5":"0.3"})
+  )};
+
+/* === AUCTION & SQUAD === */
+function autoAuc(allP,myId,clubs){const sq={};clubs.forEach(c=>{sq[c.id]=[]});
+  const pool=[...allP].sort((a,b)=>b.ov-a.ov);
+  clubs.forEach(c=>{const need={bat:4,bowl:4,ar:2,wk:1};const team=pool.filter(p=>p.club===c.id).sort((a,b)=>b.ov-a.ov);
+    team.forEach(p=>{if(sq[c.id].length>=16)return;if(p.role==="Batsman"&&need.bat>0){sq[c.id].push(p);need.bat--}
+      else if(BR.includes(p.role)&&need.bowl>0){sq[c.id].push(p);need.bowl--}
+      else if(p.role==="All-Rounder"&&need.ar>0){sq[c.id].push(p);need.ar--}
+      else if(p.role==="WK-Batsman"&&need.wk>0){sq[c.id].push(p);need.wk--}
+      else if(sq[c.id].length<16)sq[c.id].push(p)});
+    while(sq[c.id].length<16){const fill=pool.find(p=>!Object.values(sq).flat().includes(p));if(fill)sq[c.id].push(fill);else break}});
+  return{squads:sq}}
+function autoXI(squad){if(!squad||squad.length<11)return squad||[];const fit=squad.filter(p=>p.inj<=0).sort((a,b)=>b.ov-a.ov);
+  const xi=[];const pick=(role,n)=>{fit.filter(p=>p.role===role&&!xi.includes(p)).slice(0,n).forEach(p=>xi.push(p))};
+  pick("WK-Batsman",1);pick("Batsman",4);pick("All-Rounder",2);pick("Bowler (Fast)",2);pick("Bowler (Spin)",1);pick("Bowler (Medium)",1);
+  while(xi.length<11){const next=fit.find(p=>!xi.includes(p));if(next)xi.push(next);else break}return xi}
+function aiBat(xi){const o=xi.filter(p=>p.role==="Batsman"||p.role==="WK-Batsman").sort((a,b)=>b.bat-a.bat).slice(0,2);const m=xi.filter(p=>!o.includes(p)&&(p.role==="Batsman"||p.role==="All-Rounder"||p.role==="WK-Batsman")).sort((a,b)=>b.bat-a.bat);const t=xi.filter(p=>!o.includes(p)&&!m.includes(p)).sort((a,b)=>b.bat-a.bat);return[...o,...m,...t]}
+
+/* === FIXTURES === */
+function mkFix(ids){const n=ids.length;const rounds=[];const teams=[...ids];const fixed=teams[0];const rotating=teams.slice(1);
+  for(let r=0;r<n-1;r++){const round=[];const cur=[fixed,...rotating];for(let i=0;i<n/2;i++){round.push({home:cur[i],away:cur[n-1-i],result:null,played:false,round:r+1,id:cur[i]+"-"+cur[n-1-i]+"-r"+(r+1)})}rounds.push(...round);rotating.push(rotating.shift())}
+  const away=rounds.map(f=>({...f,home:f.away,away:f.home,round:f.round+(n-1),id:f.away+"-"+f.home+"-r"+(f.round+(n-1))}));return[...rounds,...away]}
+
+/* === CHEMISTRY === */
+function calcChem(squad,capId){if(!squad||squad.length<2)return{score:50,pairs:[],boost:{}};
+  let total=0,count=0;const boost={};
+  for(let i=0;i<squad.length;i++){for(let j=i+1;j<squad.length;j++){
+    const a=squad[i],b=squad[j];const pair=CHEM_PAIRS.find(p=>(p[0]===a.clique&&p[1]===b.clique)||(p[0]===b.clique&&p[1]===a.clique));
+    let c=pair?pair[2]:2;if(a.nat===b.nat)c+=2;if((a.seasonsAtClub||0)>=2&&(b.seasonsAtClub||0)>=2)c+=3;
+    total+=c;count++;boost[a.id]=(boost[a.id]||0)+c;boost[b.id]=(boost[b.id]||0)+c}}
+  const avg=count>0?Math.round(total/count*10):50;const maxB=Math.max(...Object.values(boost),1);
+  Object.keys(boost).forEach(k=>{boost[k]=Math.round(boost[k]/maxB*5)});return{score:cl(avg,0,100),pairs:[],boost}}
+
+/* === ENHANCED MATCH ENGINE === */
+function gPh(o){return o<6?"pp":o<15?"mid":"death"}
+const WT={c:"Caught",b:"Bowled",lbw:"LBW",st:"Stumped","c&b":"C&B",ro:"Run Out"};
+
+function simB(b,w,ph,pt,fld,ag,ch,tgt,sc,wk,bl,momentum,isDayNight,dewFactor){
+  let d=0.33,s1=0.28,s2=0.10,s3=0.005,s4=0.13,s6=0.06,wt=0.04,wd=0.025,nb=0.005;
+  const bc=(b.conf||50)/100;const wc=(w.conf||50)/100;
+  const bPow=(b.bsk?.power||b.bat)/100;const bTim=(b.bsk?.timing||b.bat)/100;
+  const bFoot=(b.bsk?.footwork||b.bat)/100;const bVsP=(b.bsk?.vsPace||b.bat)/100;const bVsS=(b.bsk?.vsSpin||b.bat)/100;
+  const bowlMatch=w.role==="Bowler (Spin)"?bVsS:bVsP;
+  const bk=(b.bat*0.4+bowlMatch*100*0.3+(b.form||50)*0.2+bc*15)/130;
+  const bMor=((b.mor||60)-50)/200;const wMor=((w.mor||60)-50)/200;
+  const fatPen=ph==="death"?((b.fat||0)/200):0;
+  const momBoost=(momentum||0)/100;
+  s4*=(0.6+bTim*0.7+bMor-fatPen+momBoost*0.15);
+  s6*=(0.4+bPow*1.0+bMor-fatPen+momBoost*0.2);
+  d*=(1.3-bFoot*0.4-momBoost*0.1);
+  const wAcc=(w.wsk?.accuracy||w.bowl)/100;
+  const bw=(w.bowl*0.4+wAcc*100*0.3+(w.form||50)*0.2+wc*15)/120;
+  const isPacer=["Fast","Fast-Medium","Express","Medium-Fast","Medium","Swing"].includes(w.bowlStyle);
+  if(isPacer){
+    const wSwg=(w.wsk?.swing||40)/100;const wYork=(w.wsk?.yorker||40)/100;const wBnc=(w.wsk?.bouncer||40)/100;
+    wt*=(0.5+bw*0.6+wSwg*0.2+wMor-momBoost*0.1);
+    if(ph==="death")wt*=(1.1+wYork*0.2);if(ph==="pp")wt*=(1+wBnc*0.1);
+    if(pt==="pace")wt*=(1.15+wSwg*0.1);
+    if(isDayNight&&(dewFactor||0)>0.5){wt*=0.85;s4*=1.1}
+  }else{
+    const wTurn=(w.wsk?.turn||40)/100;const wFlt=(w.wsk?.flight||40)/100;const wVar=(w.wsk?.variation||40)/100;
+    wt*=(0.5+bw*0.5+wTurn*0.25+wVar*0.2+wMor-momBoost*0.1);
+    d*=(0.85+wVar*0.15+wFlt*0.15);
+    if(pt==="spin")wt*=(1.2+wTurn*0.15);if(ph==="mid")wt*=1.1;
+    if(isDayNight&&(dewFactor||0)>0.5){wt*=0.75;d*=0.9;s4*=1.15}
+  }
+  d*=(0.8+wAcc*0.3);
+  if(pt==="flat"){s4*=1.15;s6*=1.15;wt*=0.85}
+  if(ph==="pp"){s4*=1.1;s6*=1.05;wt*=1.1}
+  else if(ph==="mid"){d*=1.05;s4*=0.9;s6*=0.85}
+  else{s4*=1.1;s6*=(1.3+bPow*0.3);wt*=1.1;if((b.fit||50)<40)wt*=1.15}
+  if(fld==="attacking")wt*=1.1;else if(fld==="defensive"){wt*=0.9;s1*=1.1}
+  if(ag==="aggressive"){s4*=1.12;s6*=1.2;wt*=1.15}else if(ag==="defensive"){s4*=0.82;s6*=0.72;wt*=0.88}
+  if(ch&&tgt){const r2=120-bl;const rr=r2>0?(tgt-sc)/(r2/6):99;if(rr>12){s6*=1.5;wt*=1.4}else if(rr>9)s6*=1.2}
+  if(wk>=5)wt*=(1.35-(b.tmp||50)/99*0.5);if(bc<0.3)wt*=1.2;
+  const pitchWear=Math.min(bl/240,0.3);if(!isPacer)wt*=(1+pitchWear*0.5);
+  const tot=d+s1+s2+s3+s4+s6+wt+wd+nb;let r=rng.n()*tot,cum=0;
+  for(const[t,p]of[["dot",d],["1",s1],["2",s2],["3",s3],["4",s4],["6",s6],["W",wt],["wd",wd],["nb",nb]]){cum+=p;if(r<=cum){let wty="";
+    if(t==="W"){const wr=rng.n();const fldC=(b.fsk?.catching||50)/100;
+      wty=w.role==="Bowler (Spin)"?(wr<0.3?"lbw":wr<0.5?"st":wr<(0.5+fldC*0.3)?"c":"b"):isPacer?(wr<(0.35+fldC*0.1)?"c":wr<0.6?"b":wr<0.8?"lbw":"c&b"):(wr<(0.3+fldC*0.1)?"c":wr<0.55?"b":wr<0.75?"lbw":"ro")}
+    let runs=t==="dot"||t==="W"?0:t==="wd"||t==="nb"?1:parseInt(t);
+    if(t==="2"&&fld==="attacking"&&rng.c(0.15))runs=1;
+    return{t,wty,runs}}}return{t:"dot",runs:0}}
+
+/* === SUPER OVER === */
+function simSuperOver(team1XI,team2XI,pt,isDN,dew){
+  const simSO=(batters,bowler)=>{let r=0,w=0,balls=0;
+    while(balls<6&&w<2){const stk=batters[Math.min(w,1)];
+      const res=simB(stk,bowler,"death",pt,"balanced","aggressive",false,null,r,w,balls,0,isDN,dew);
+      r+=res.runs;if(res.t==="W")w++;if(res.t!=="wd"&&res.t!=="nb")balls++}
+    return{r,w,balls}};
+  const bat1=[team1XI[0],team1XI[1]];const bwl1=team2XI.find(p=>BR.includes(p.role))||team2XI[0];
+  const bat2=[team2XI[0],team2XI[1]];const bwl2=team1XI.find(p=>BR.includes(p.role))||team1XI[0];
+  const so1=simSO(bat1,bwl1);const so2=simSO(bat2,bwl2);
+  return{team1Score:so1,team2Score:so2,winner:so2.r>so1.r?"team2":so2.r<so1.r?"team1":"tie"}}
+
+/* === STATS === */
+function addMS(ms,s){return{r:ms.r+s.r,w:ms.w+s.w,m:ms.m+1,bf:(ms.bf||0)+s.bf,bb:(ms.bb||0)+s.bb,rc:(ms.rc||0)+s.rc,hs:Math.max(ms.hs||0,s.r),bw:s.w>0&&s.w>parseInt(ms.bw||"0")?s.w+"/"+s.rc:(ms.bw||"0/0"),f4:(ms.f4||0)+s.f4,s6:(ms.s6||0)+s.s6,ct:ms.ct||0,ratings:[...(ms.ratings||[]),s.rating].slice(-20)}}
+function simPS(p,won){const isBat=p.role==="Batsman"||p.role==="WK-Batsman"||p.role==="All-Rounder";const isBowl=BR.includes(p.role)||p.role==="All-Rounder";
+  let r=0,bf=0,f4=0,s6=0;
+  if(isBat||rng.c(0.7)){const ability=p.bat/100;bf=rng.i(5,Math.round(20+ability*25));const sr=0.8+ability*0.8+rng.f(-0.2,0.3);r=Math.max(0,Math.round(bf*sr));f4=Math.min(Math.floor(r/5),rng.i(0,Math.floor(r/4)));s6=r>25?rng.i(0,Math.floor(r/18)):0}
+  let w=0,bb=0,rc=0;
+  if(isBowl){bb=rng.i(18,24);const econ=5+((100-p.bowl)/100)*5+rng.f(-1,2);rc=Math.round(bb/6*econ);w=rng.c(p.bowl/150)?rng.i(1,3+(p.bowl>80?1:0)):0}
+  let rating=5.0;if(bf>0){if(r>=50)rating+=2.5;else if(r>=30)rating+=1.5;else if(r>=15)rating+=0.5;else if(r<5&&bf>10)rating-=1.0}
+  if(bb>0){if(w>=3)rating+=2.5;else if(w>=2)rating+=1.5;else if(w>=1)rating+=0.5;const eco2=rc/(bb/6);if(eco2<=6)rating+=1.0;else if(eco2>=10)rating-=0.5}
+  if(won)rating+=0.5;rating=Math.round(Math.max(0,Math.min(10,rating))*10)/10;
+  return{r,bf,f4,s6,w,bb,rc,rating}}
+
+/* === SAVE/LOAD === */
+async function saveG(s){try{await window.storage.set("cm10",JSON.stringify(s));return true}catch{return false}}
+async function loadG(){try{const r=await window.storage.get("cm10");return r?JSON.parse(r.value):null}catch{return null}}
