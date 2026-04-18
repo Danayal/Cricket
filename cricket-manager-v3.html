@@ -1061,24 +1061,165 @@ const CricketPitch3D=({ballPhase,lastResult,shotAngle,fieldSet,homeColor,awayCol
     /* Stumps */
     const makeStumps=(z,color=0xf5f5dc)=>{const g=new THREE.Group();for(let i=-1;i<=1;i++){const s=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,1.1,8),new THREE.MeshStandardMaterial({color,emissive:0x221100}));s.position.set(i*0.28,0.55,z);s.castShadow=true;g.add(s)}const bail1=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.6,6),new THREE.MeshStandardMaterial({color:0xe6d08a}));bail1.rotation.z=Math.PI/2;bail1.position.set(0,1.12,z);g.add(bail1);return g};
     const stumpsNear=makeStumps(9.8);scene.add(stumpsNear);const stumpsFar=makeStumps(-9.8);scene.add(stumpsFar);
-    /* Simple player avatar */
-    const makeAvatar=(color,kit)=>{const g=new THREE.Group();const bod=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.5,1.4,12),new THREE.MeshStandardMaterial({color:kit||0xffffff}));bod.position.y=0.9;bod.castShadow=true;g.add(bod);const head=new THREE.Mesh(new THREE.SphereGeometry(0.32,12,12),new THREE.MeshStandardMaterial({color:0xd9b38c}));head.position.y=1.9;head.castShadow=true;g.add(head);const cap=new THREE.Mesh(new THREE.SphereGeometry(0.34,12,8,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color}));cap.position.y=2.0;g.add(cap);return g};
-    /* Batsman (stripe) */
-    const batsman=makeAvatar(hexToNum(cH),0xf2f2f2);batsman.position.set(0.4,0,9.4);scene.add(batsman);
-    const bat=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.9,0.05),new THREE.MeshStandardMaterial({color:0xd4a47a}));bat.position.set(0.8,0.9,9.7);bat.rotation.z=-0.2;scene.add(bat);
+    /* === RIGGED HUMANOID === */
+    const SKIN=[0xe0ac69,0xf1c27d,0xffdbac,0xd4a574,0xc68642,0x8d5524];
+    const makeHuman=(shirt,pants,cap,skin,opts)=>{
+      opts=opts||{};
+      const mat=(c,r)=>new THREE.MeshStandardMaterial({color:c,roughness:r!==undefined?r:0.7,metalness:0.05});
+      const skinMat=mat(skin,0.85);
+      const shirtMat=mat(shirt,0.7);
+      const pantsMat=mat(pants||0xf0f0f0,0.8);
+      const capMat=mat(cap||shirt,0.6);
+      const shoeMat=mat(0x1a1a1a,0.3);
+      /* Root - at hip height (~0.95) */
+      const root=new THREE.Group();root.position.y=0;
+      const pelvis=new THREE.Group();pelvis.position.y=0.95;root.add(pelvis);
+      const pelvisMesh=new THREE.Mesh(new THREE.BoxGeometry(0.42,0.18,0.28),pantsMat);pelvisMesh.castShadow=true;pelvis.add(pelvisMesh);
+      /* Spine / torso */
+      const torso=new THREE.Group();torso.position.y=0.09;pelvis.add(torso);
+      const chest=new THREE.Mesh(new THREE.BoxGeometry(0.48,0.46,0.30),shirtMat);chest.position.y=0.26;chest.castShadow=true;torso.add(chest);
+      /* Neck/Head */
+      const neck=new THREE.Group();neck.position.y=0.55;torso.add(neck);
+      const head=new THREE.Group();neck.add(head);
+      const headMesh=new THREE.Mesh(new THREE.SphereGeometry(0.16,16,16),skinMat);headMesh.position.y=0.08;headMesh.castShadow=true;head.add(headMesh);
+      /* Cap or helmet */
+      if(opts.helmet){
+        const hmet=new THREE.Mesh(new THREE.SphereGeometry(0.19,16,16,0,Math.PI*2,0,Math.PI*0.55),mat(0x222244,0.4));hmet.position.y=0.08;hmet.scale.set(1.05,1,1.1);head.add(hmet);
+        const grill=new THREE.Mesh(new THREE.TorusGeometry(0.13,0.01,4,8,Math.PI),mat(0x888888,0.2));grill.position.set(0,0.05,0.13);grill.rotation.x=Math.PI/2;head.add(grill);
+      } else if(opts.keeperHat){
+        const hat=new THREE.Mesh(new THREE.SphereGeometry(0.18,16,10,0,Math.PI*2,0,Math.PI*0.55),capMat);hat.position.y=0.1;head.add(hat);
+      } else {
+        const capMesh=new THREE.Mesh(new THREE.SphereGeometry(0.18,12,8,0,Math.PI*2,0,Math.PI*0.42),capMat);capMesh.position.y=0.11;head.add(capMesh);
+        const peak=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.02,0.1),capMat);peak.position.set(0,0.1,0.14);head.add(peak);
+      }
+      /* Arms - shoulder, elbow hierarchy */
+      const mkArm=(sx)=>{
+        const shoulder=new THREE.Group();shoulder.position.set(sx,0.44,0);torso.add(shoulder);
+        const upperArm=new THREE.Mesh(new THREE.CapsuleGeometry(0.065,0.28,4,8),shirtMat);upperArm.position.y=-0.17;upperArm.castShadow=true;shoulder.add(upperArm);
+        const elbow=new THREE.Group();elbow.position.y=-0.32;shoulder.add(elbow);
+        const forearm=new THREE.Mesh(new THREE.CapsuleGeometry(0.055,0.26,4,8),skinMat);forearm.position.y=-0.15;forearm.castShadow=true;elbow.add(forearm);
+        const hand=new THREE.Group();hand.position.y=-0.30;elbow.add(hand);
+        const handMesh=new THREE.Mesh(new THREE.SphereGeometry(0.055,8,8),skinMat);hand.add(handMesh);
+        return {shoulder,elbow,hand};
+      };
+      const armL=mkArm(-0.28);const armR=mkArm(0.28);
+      /* Legs - hip, knee hierarchy */
+      const mkLeg=(sx)=>{
+        const hip=new THREE.Group();hip.position.set(sx,-0.09,0);pelvis.add(hip);
+        const thigh=new THREE.Mesh(new THREE.CapsuleGeometry(0.09,0.38,4,8),pantsMat);thigh.position.y=-0.22;thigh.castShadow=true;hip.add(thigh);
+        const knee=new THREE.Group();knee.position.y=-0.44;hip.add(knee);
+        const shin=new THREE.Mesh(new THREE.CapsuleGeometry(0.075,0.36,4,8),pantsMat);shin.position.y=-0.2;shin.castShadow=true;knee.add(shin);
+        const foot=new THREE.Mesh(new THREE.BoxGeometry(0.14,0.07,0.24),shoeMat);foot.position.set(0,-0.42,0.06);foot.castShadow=true;knee.add(foot);
+        return {hip,knee,foot};
+      };
+      const legL=mkLeg(-0.11);const legR=mkLeg(0.11);
+      /* Gloves (keeper) */
+      if(opts.gloves){
+        [armL.hand,armR.hand].forEach(h=>{const g=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.12,0.16),mat(0xdc2626,0.5));h.add(g)});
+      }
+      return {group:root,pelvis,torso,head,neck,armL,armR,legL,legR};
+    };
+    /* Pose engine */
+    const lerpRot=(obj,tx,ty,tz,k)=>{obj.rotation.x+=(tx-obj.rotation.x)*k;obj.rotation.y+=(ty-obj.rotation.y)*k;obj.rotation.z+=(tz-obj.rotation.z)*k};
+    const setPose=(h,pose,t,speed)=>{
+      const k=0.18;/* smoothing */
+      if(pose==="idle"){
+        const sway=Math.sin(t*2)*0.03;
+        lerpRot(h.torso,sway,0,0,k);lerpRot(h.neck,0,Math.sin(t*0.7)*0.1,0,k);
+        lerpRot(h.armL.shoulder,0.05,0,0.06,k);lerpRot(h.armR.shoulder,0.05,0,-0.06,k);
+        lerpRot(h.armL.elbow,0.3,0,0,k);lerpRot(h.armR.elbow,0.3,0,0,k);
+        lerpRot(h.legL.hip,0,0,0.02,k);lerpRot(h.legR.hip,0,0,-0.02,k);
+        lerpRot(h.legL.knee,0.05,0,0,k);lerpRot(h.legR.knee,0.05,0,0,k);
+      } else if(pose==="run"){
+        /* Alternating leg/arm swing cycle */
+        const phase=t*(speed||6);
+        const s=Math.sin(phase),c=Math.cos(phase);
+        lerpRot(h.legL.hip,s*0.9,0,0.02,0.3);lerpRot(h.legR.hip,-s*0.9,0,-0.02,0.3);
+        lerpRot(h.legL.knee,Math.max(0,-s*0.6)+0.3,0,0,0.3);lerpRot(h.legR.knee,Math.max(0,s*0.6)+0.3,0,0,0.3);
+        lerpRot(h.armL.shoulder,-s*0.8,0,0.08,0.3);lerpRot(h.armR.shoulder,s*0.8,0,-0.08,0.3);
+        lerpRot(h.armL.elbow,0.9,0,0,0.3);lerpRot(h.armR.elbow,0.9,0,0,0.3);
+        lerpRot(h.torso,c*0.08,s*0.1,0,0.3);
+        h.pelvis.position.y=0.95+Math.abs(s)*0.05;
+      } else if(pose==="bowl"){
+        /* t:0..1 delivery action; right arm arcs over */
+        const u=Math.min(1,Math.max(0,t));
+        const armAng=lerp(-2.5,-0.3,u);/* from behind (-2.5) to follow-through (-0.3) */
+        lerpRot(h.armR.shoulder,armAng,0,-0.1,0.4);lerpRot(h.armR.elbow,lerp(0.1,0.3,u),0,0,0.4);
+        lerpRot(h.armL.shoulder,lerp(1.0,-0.6,u),0,0.2,0.4);lerpRot(h.armL.elbow,lerp(0.8,0.4,u),0,0,0.4);
+        /* Stride */
+        lerpRot(h.legL.hip,lerp(-0.9,0.2,u),0,0,0.4);lerpRot(h.legR.hip,lerp(0.3,-0.3,u),0,0,0.4);
+        lerpRot(h.legL.knee,lerp(0.2,0.7,u),0,0,0.4);lerpRot(h.legR.knee,lerp(0.5,0.6,u),0,0,0.4);
+        /* Torso tilt */
+        lerpRot(h.torso,lerp(-0.25,0.35,u),lerp(-0.1,0.15,u),0,0.4);
+        lerpRot(h.neck,lerp(0.1,0.3,u),0,0,0.4);
+        h.pelvis.position.y=0.95+Math.sin(u*Math.PI)*0.08;
+      } else if(pose==="stance"){
+        /* Batsman ready stance */
+        lerpRot(h.torso,0.18,-0.25,0,k);
+        lerpRot(h.neck,-0.05,0.4,0,k);
+        lerpRot(h.legL.hip,0.1,0,0.15,k);lerpRot(h.legR.hip,-0.05,0,-0.1,k);
+        lerpRot(h.legL.knee,0.55,0,0,k);lerpRot(h.legR.knee,0.55,0,0,k);
+        lerpRot(h.armL.shoulder,-0.2,0,0.6,k);lerpRot(h.armR.shoulder,-0.3,0,-0.8,k);
+        lerpRot(h.armL.elbow,1.4,0,0,k);lerpRot(h.armR.elbow,1.3,0,0,k);
+      } else if(pose==="shot"){
+        /* t:0..1 bat swing through */
+        const u=Math.min(1,Math.max(0,t));
+        lerpRot(h.torso,lerp(0.15,-0.15,u),lerp(-0.3,0.6,u),0,0.35);
+        lerpRot(h.legL.hip,lerp(0.2,0.5,u),0,0.1,0.35);lerpRot(h.legR.hip,lerp(-0.1,0.1,u),0,-0.1,0.35);
+        lerpRot(h.legL.knee,lerp(0.3,0.2,u),0,0,0.35);lerpRot(h.legR.knee,lerp(0.7,0.4,u),0,0,0.35);
+        /* Arms - swing from up to across */
+        lerpRot(h.armL.shoulder,lerp(-1.3,0.3,u),0,0.3,0.4);lerpRot(h.armR.shoulder,lerp(-1.5,0.1,u),0,-0.3,0.4);
+        lerpRot(h.armL.elbow,lerp(0.7,1.1,u),0,0,0.4);lerpRot(h.armR.elbow,lerp(0.5,0.9,u),0,0,0.4);
+      } else if(pose==="crouch"){
+        /* Wicketkeeper */
+        lerpRot(h.torso,0.5,0,0,k);lerpRot(h.neck,-0.2,0,0,k);
+        lerpRot(h.legL.hip,1.4,0,0.2,k);lerpRot(h.legR.hip,1.4,0,-0.2,k);
+        lerpRot(h.legL.knee,1.6,0,0,k);lerpRot(h.legR.knee,1.6,0,0,k);
+        lerpRot(h.armL.shoulder,-0.5,0,0.4,k);lerpRot(h.armR.shoulder,-0.5,0,-0.4,k);
+        lerpRot(h.armL.elbow,1.4,0,0,k);lerpRot(h.armR.elbow,1.4,0,0,k);
+        h.pelvis.position.y=0.55;
+      } else if(pose==="celebrate"){
+        const b=Math.sin(t*6)*0.2;
+        lerpRot(h.armL.shoulder,-3.0+b,0,0.4,k);lerpRot(h.armR.shoulder,-3.0-b,0,-0.4,k);
+        lerpRot(h.armL.elbow,0.2,0,0,k);lerpRot(h.armR.elbow,0.2,0,0,k);
+        lerpRot(h.torso,-0.1,0,0,k);
+        h.pelvis.position.y=0.95+Math.abs(Math.sin(t*6))*0.12;
+      } else if(pose==="dejected"){
+        lerpRot(h.torso,0.3,0,0,k);lerpRot(h.neck,0.3,0,0,k);
+        lerpRot(h.armL.shoulder,0.2,0,0,k);lerpRot(h.armR.shoulder,0.2,0,0,k);
+        lerpRot(h.armL.elbow,0.4,0,0,k);lerpRot(h.armR.elbow,0.4,0,0,k);
+        lerpRot(h.legL.knee,0.2,0,0,k);lerpRot(h.legR.knee,0.2,0,0,k);
+      } else if(pose==="alert"){
+        /* Fielder on toes */
+        const sway=Math.sin(t*3)*0.04;
+        lerpRot(h.torso,0.15+sway,0,0,k);
+        lerpRot(h.legL.hip,0.05,0,0.12,k);lerpRot(h.legR.hip,0.05,0,-0.12,k);
+        lerpRot(h.legL.knee,0.4,0,0,k);lerpRot(h.legR.knee,0.4,0,0,k);
+        lerpRot(h.armL.shoulder,-0.2,0,0.25,k);lerpRot(h.armR.shoulder,-0.2,0,-0.25,k);
+        lerpRot(h.armL.elbow,0.9,0,0,k);lerpRot(h.armR.elbow,0.9,0,0,k);
+      }
+    };
+    const lerp=(a,b,k)=>a+(b-a)*k;
+    const pickSkin=()=>SKIN[Math.floor(Math.random()*SKIN.length)];
+    /* Create batsman with helmet + bat in right hand */
+    const batsman=makeHuman(hexToNum(cH),0xf2f2f2,hexToNum(cH),pickSkin(),{helmet:true});batsman.group.position.set(0.4,0,9.4);batsman.group.rotation.y=-Math.PI*0.05;scene.add(batsman.group);
+    const bat=new THREE.Group();
+    const batBlade=new THREE.Mesh(new THREE.BoxGeometry(0.11,0.7,0.04),new THREE.MeshStandardMaterial({color:0xe4c590,roughness:0.7}));batBlade.position.y=-0.35;batBlade.castShadow=true;bat.add(batBlade);
+    const batHandle=new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.022,0.28,8),new THREE.MeshStandardMaterial({color:0x222222}));batHandle.position.y=0.15;bat.add(batHandle);
+    bat.rotation.z=0.3;bat.position.y=-0.1;batsman.armR.hand.add(bat);
     /* Non-striker */
-    const nonStriker=makeAvatar(hexToNum(cH),0xf2f2f2);nonStriker.position.set(-0.4,0,-9);scene.add(nonStriker);
-    /* Wicketkeeper */
-    const keeper=makeAvatar(hexToNum(cA),0xffffff);keeper.position.set(0,0,12);scene.add(keeper);
+    const nonStriker=makeHuman(hexToNum(cH),0xf2f2f2,hexToNum(cH),pickSkin(),{helmet:true});nonStriker.group.position.set(-0.4,0,-9);scene.add(nonStriker.group);
+    /* Keeper with gloves */
+    const keeper=makeHuman(hexToNum(cA),0xffffff,hexToNum(cA),pickSkin(),{keeperHat:true,gloves:true});keeper.group.position.set(0,0,12);keeper.group.rotation.y=Math.PI;scene.add(keeper.group);
     /* Bowler */
-    const bowler=makeAvatar(hexToNum(cA),0xffffff);bowler.position.set(0,0,-10);scene.add(bowler);
+    const bowler=makeHuman(hexToNum(cA),0xffffff,hexToNum(cA),pickSkin(),{});bowler.group.position.set(0,0,-11.5);scene.add(bowler.group);
     /* Umpire */
-    const umpire=makeAvatar(0x222233,0x222233);umpire.position.set(1.5,0,-10.5);scene.add(umpire);
+    const umpire=makeHuman(0x111827,0xffffff,0x111827,pickSkin(),{});umpire.group.position.set(1.8,0,-10.5);umpire.group.rotation.y=Math.PI;scene.add(umpire.group);
     /* Fielders */
     const FPos={attacking:[[-6,-5],[6,-5],[-11,3],[11,3],[0,-14],[-9,8],[9,8],[-16,14],[16,14]],
       defensive:[[-8,0],[8,0],[-14,5],[14,5],[0,-6],[-12,12],[12,12],[-18,16],[18,16]],
       balanced:[[-7,-3],[7,-3],[-12,4],[12,4],[0,-10],[-11,10],[11,10],[-17,15],[17,15]]};
-    const fpArr=FPos[fieldSet]||FPos.balanced;const fielders=[];fpArr.forEach((p)=>{const av=makeAvatar(hexToNum(cA),0xffffff);av.position.set(p[0],0,p[1]);scene.add(av);fielders.push(av)});
+    const fpArr=FPos[fieldSet]||FPos.balanced;const fielders=[];fpArr.forEach((p)=>{const av=makeHuman(hexToNum(cA),0xffffff,hexToNum(cA),pickSkin(),{});av.group.position.set(p[0],0,p[1]);av.homePos={x:p[0],z:p[1]};av.group.lookAt(0,0,9);scene.add(av.group);fielders.push(av)});
     /* Ball */
     const ball=new THREE.Mesh(new THREE.SphereGeometry(0.22,16,12),new THREE.MeshStandardMaterial({color:0xb22222,emissive:0x550000,emissiveIntensity:0.3,metalness:0.2,roughness:0.4}));ball.castShadow=true;ball.position.set(0,0.8,-9.5);scene.add(ball);
     /* Shot trail */
@@ -1086,59 +1227,134 @@ const CricketPitch3D=({ballPhase,lastResult,shotAngle,fieldSet,homeColor,awayCol
     const trailGeo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0.8,9.4),new THREE.Vector3(0,0.8,9.4)]);
     const trail=new THREE.Line(trailGeo,trailMat);scene.add(trail);
 
-    refs.current={THREE,scene,camera,renderer,ball,batsman,bat,bowler,keeper,stumpsNear,stumpsFar,fielders,trail,trailMat,el,stripesGroup,cH:hexToNum(cH),cA:hexToNum(cA)};
+    refs.current={THREE,scene,camera,renderer,ball,batsman,bat,bowler,keeper,nonStriker,umpire,stumpsNear,stumpsFar,fielders,trail,trailMat,el,stripesGroup,cH:hexToNum(cH),cA:hexToNum(cA),setPose,lerp,poseState:{phase:"idle",t0:performance.now(),lastResult:"dot",shotAngle:0,chaserIdx:-1,chaseTarget:null}};
     /* Resize */
     const onR=()=>{const nw=el.clientWidth;const nh=Math.max(240,Math.min(420,nw));camera.aspect=nw/nh;camera.updateProjectionMatrix();renderer.setSize(nw,nh);setSize({w:nw,h:nh})};
     window.addEventListener("resize",onR);
-    /* Render loop */
-    let t=0;let raf;
-    const loop=()=>{t+=0.016;camera.position.x=Math.sin(t*0.05)*0.8;renderer.render(scene,camera);raf=requestAnimationFrame(loop)};loop();
+    /* Render loop with pose-driven animation */
+    let t=0;let raf;let lastFrame=performance.now();
+    const loop=()=>{
+      const now=performance.now();const dt=Math.min(0.05,(now-lastFrame)/1000);lastFrame=now;t+=dt;
+      const ps=refs.current.poseState;const ph=ps.phase;const localT=(now-ps.t0)/1000;
+      /* Camera gentle parallax */
+      camera.position.x=Math.sin(t*0.08)*1.2;
+      /* Phase-based poses */
+      if(ph==="mark"){
+        setPose(bowler,"idle",t);setPose(batsman,"stance",t);setPose(nonStriker,"idle",t);
+        setPose(keeper,"crouch",t);setPose(umpire,"idle",t);
+        fielders.forEach(f=>setPose(f,"alert",t));
+        /* Bowler moves back to mark */
+        bowler.group.position.z+=(-11.5-bowler.group.position.z)*0.08;
+        bowler.group.position.x+=(0-bowler.group.position.x)*0.08;
+        bowler.group.rotation.y+=(0-bowler.group.rotation.y)*0.1;
+      } else if(ph==="runup"){
+        const runProgress=Math.min(1,localT/1.4);
+        setPose(bowler,"run",t,8);
+        setPose(batsman,"stance",t);setPose(nonStriker,"idle",t);
+        setPose(keeper,"crouch",t);setPose(umpire,"idle",t);
+        fielders.forEach(f=>setPose(f,"alert",t));
+        /* Glide bowler forward during run-up */
+        const targetZ=-11.5+runProgress*2.2;
+        bowler.group.position.z=targetZ;
+      } else if(ph==="delivery"){
+        const u=Math.min(1,localT/0.7);
+        setPose(bowler,"bowl",u);
+        setPose(batsman,"stance",t);setPose(nonStriker,"idle",t);
+        setPose(keeper,"crouch",t);setPose(umpire,"idle",t);
+        fielders.forEach(f=>setPose(f,"alert",t));
+      } else if(ph==="impact"||ph==="travel"){
+        const u=Math.min(1,localT/0.6);
+        setPose(bowler,"idle",t);
+        setPose(batsman,"shot",u);setPose(nonStriker,"alert",t);
+        setPose(keeper,"crouch",t);setPose(umpire,"idle",t);
+        /* Nearest fielder chases on travel */
+        if(ph==="travel"&&ps.chaserIdx<0&&ps.chaseTarget){
+          let bestI=-1,bestD=1e9;fielders.forEach((f,i)=>{const d=(f.homePos.x-ps.chaseTarget.x)**2+(f.homePos.z-ps.chaseTarget.z)**2;if(d<bestD){bestD=d;bestI=i}});ps.chaserIdx=bestI;
+        }
+        fielders.forEach((f,i)=>{
+          if(i===ps.chaserIdx&&ps.chaseTarget){
+            setPose(f,"run",t,7);
+            const tgt=ps.chaseTarget;const dx=tgt.x-f.group.position.x;const dz=tgt.z-f.group.position.z;const d=Math.sqrt(dx*dx+dz*dz);
+            if(d>0.5){const sp=6*dt;f.group.position.x+=dx/d*Math.min(sp,d);f.group.position.z+=dz/d*Math.min(sp,d);f.group.lookAt(tgt.x,0,tgt.z)}
+          } else setPose(f,"alert",t);
+        });
+      } else if(ph==="outcome"){
+        const u=Math.min(1,localT/0.6);
+        setPose(bowler,ps.lastResult==="W"?"celebrate":"idle",t);
+        setPose(batsman,ps.lastResult==="W"?"dejected":"idle",t);
+        setPose(nonStriker,"idle",t);
+        setPose(keeper,ps.lastResult==="W"?"celebrate":"crouch",t);
+        setPose(umpire,"idle",t);
+        fielders.forEach((f,i)=>setPose(f,ps.lastResult==="W"?"celebrate":i===ps.chaserIdx?"alert":"alert",t));
+      } else if(ph==="celebrate"){
+        const big=ps.lastResult==="W"||ps.lastResult==="6"||ps.lastResult==="4";
+        setPose(bowler,ps.lastResult==="W"?"celebrate":"idle",t);
+        setPose(batsman,ps.lastResult==="W"?"dejected":big?"celebrate":"stance",t);
+        setPose(nonStriker,big&&ps.lastResult!=="W"?"celebrate":"idle",t);
+        setPose(keeper,ps.lastResult==="W"?"celebrate":"crouch",t);
+        setPose(umpire,"idle",t);
+        fielders.forEach(f=>setPose(f,ps.lastResult==="W"?"celebrate":"alert",t));
+      } else { /* idle */
+        setPose(bowler,"idle",t);setPose(batsman,"stance",t);setPose(nonStriker,"idle",t);
+        setPose(keeper,"crouch",t);setPose(umpire,"idle",t);
+        fielders.forEach((f,i)=>{
+          setPose(f,"alert",t);
+          /* Drift fielders back to home position */
+          f.group.position.x+=(f.homePos.x-f.group.position.x)*0.05;
+          f.group.position.z+=(f.homePos.z-f.group.position.z)*0.05;
+        });
+      }
+      /* Ball follows bowler hand during runup/early delivery */
+      if(ph==="mark"||ph==="runup"){
+        const hw=new THREE.Vector3();bowler.armR.hand.getWorldPosition(hw);
+        ball.position.copy(hw);ball.visible=true;
+      }
+      renderer.render(scene,camera);raf=requestAnimationFrame(loop);
+    };loop();
     return()=>{window.removeEventListener("resize",onR);cancelAnimationFrame(raf);try{renderer.dispose();if(el.contains(renderer.domElement))el.removeChild(renderer.domElement)}catch(e){}};
   },[fieldSet,homeColor,awayColor]);
 
-  /* Animate ball based on phase */
+  /* Phase change: push pose state + drive ball trajectory */
   useEffect(()=>{
     const r=refs.current;if(!r||!r.ball)return;const THREE=r.THREE;
-    const ball=r.ball;const bat=r.bat;const bowler=r.bowler;const batsman=r.batsman;const trail=r.trail;
-    /* Cancel in-flight tweens */
+    const ball=r.ball;const trail=r.trail;
     r.tween&&cancelAnimationFrame(r.tween);
+    /* Update poseState for the render loop */
+    r.poseState={phase:ballPhase,t0:performance.now(),lastResult:lastResult||"dot",shotAngle:shotAngle||0,chaserIdx:-1,chaseTarget:null};
     const start=performance.now();
-    const tween=(from,to,dur,onUpd,onDone)=>{const run=()=>{const el=performance.now()-start;const k=Math.min(1,el/dur);const ease=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2;onUpd(ease);if(k<1){r.tween=requestAnimationFrame(run)}else{onDone&&onDone()}};run()};
+    const tween=(dur,onUpd,onDone)=>{const run=()=>{const el=performance.now()-start;const k=Math.min(1,el/dur);const ease=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2;onUpd(ease);if(k<1){r.tween=requestAnimationFrame(run)}else{onDone&&onDone()}};run()};
     const lerp=(a,b,k)=>a+(b-a)*k;
-    if(ballPhase==="mark"){
-      /* Reset positions */
-      ball.position.set(0,0.8,-9.5);ball.visible=true;r.trailMat.opacity=0;
-      batsman.rotation.y=0;bowler.position.set(0,0,-11.5);
-    } else if(ballPhase==="runup"){
-      tween({},{},900,(k)=>{bowler.position.z=lerp(-11.5,-10.2,k);bowler.position.y=Math.sin(k*Math.PI*2)*0.08});
-    } else if(ballPhase==="delivery"){
-      /* Ball from bowler toward batsman with arc */
-      const fromZ=-9.5,toZ=9.2;
-      tween({},{},700,(k)=>{const z=lerp(fromZ,toZ,k);const y=0.8+Math.sin(k*Math.PI)*1.2;ball.position.set(0,y,z)});
+    if(ballPhase==="delivery"){
+      /* Ball released from bowler hand at peak and flies to batsman */
+      const handStart=new THREE.Vector3();r.bowler.armR.hand.getWorldPosition(handStart);
+      const toZ=9.0;const toX=0.2;
+      tween(700,(k)=>{
+        /* First 15% ball still at hand; then arc */
+        const rel=k<0.15?0:(k-0.15)/0.85;
+        const x=lerp(handStart.x,toX,rel);
+        const z=lerp(handStart.z,toZ,rel);
+        const y=lerp(handStart.y,0.5,rel)+Math.sin(rel*Math.PI)*0.8;
+        ball.position.set(x,y,z);
+      });
     } else if(ballPhase==="impact"){
-      /* Bat swings */
-      tween({},{},260,(k)=>{bat.rotation.z=-0.2-k*1.1});
+      /* Ball stays near bat briefly */
+      tween(250,(k)=>{ball.position.set(0.3,0.8-k*0.2,9.2+k*0.3)});
     } else if(ballPhase==="travel"){
-      /* Ball flies to outcome based on lastResult + shotAngle */
-      const a=shotAngle||0;let distR=lastResult==="6"?44:lastResult==="4"?38:lastResult==="W"?0:lastResult==="dot"?0:15;
+      const a=shotAngle||0;let distR=lastResult==="6"?42:lastResult==="4"?36:lastResult==="W"?0:lastResult==="dot"?0:14;
       const targetX=Math.sin(a)*distR;const targetZ=9.2+Math.cos(a)*-distR;
-      const dur=lastResult==="6"?1200:lastResult==="4"?1000:lastResult==="W"?500:600;
+      r.poseState.chaseTarget={x:targetX,z:targetZ};
+      const dur=lastResult==="6"?1300:lastResult==="4"?1100:lastResult==="W"?450:700;
       if(lastResult==="W"){
-        /* Ball into stumps or up to keeper */
-        tween({},{},500,(k)=>{ball.position.set(lerp(0,0,k),lerp(0.8,0.3,k),lerp(9.2,9.9,k))},()=>{r.stumpsNear.children.forEach(s=>{s.rotation.z=(Math.random()-0.5)*0.6;s.position.y=0.3})});
+        tween(450,(k)=>{ball.position.set(lerp(0.3,0,k),lerp(0.6,0.3,k),lerp(9.5,9.9,k))},()=>{r.stumpsNear.children.forEach(s=>{s.rotation.z=(Math.random()-0.5)*0.8;s.position.y=0.3})});
       } else if(lastResult==="dot"){
-        tween({},{},400,(k)=>{ball.position.set(lerp(0,-1,k),lerp(0.8,0.5,k),lerp(9.2,12,k))});
+        tween(400,(k)=>{ball.position.set(lerp(0.3,-0.4,k),lerp(0.6,0.4,k),lerp(9.5,11.5,k))});
       } else {
-        /* Arc to boundary */
         const h=lastResult==="6"?8:lastResult==="4"?3:2;
-        const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,1,9.2),new THREE.Vector3(targetX,0.3,targetZ)]);trail.geometry.dispose();trail.geometry=geo;r.trailMat.opacity=0.7;r.trailMat.color.setHex(lastResult==="6"?0xfbbf24:0x22c55e);
-        tween({},{},dur,(k)=>{ball.position.set(lerp(0,targetX,k),lerp(0.8,0.3,k)+Math.sin(k*Math.PI)*h,lerp(9.2,targetZ,k))});
+        const geo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.3,1,9.2),new THREE.Vector3(targetX,0.3,targetZ)]);trail.geometry.dispose();trail.geometry=geo;r.trailMat.opacity=0.7;r.trailMat.color.setHex(lastResult==="6"?0xfbbf24:0x22c55e);
+        tween(dur,(k)=>{ball.position.set(lerp(0.3,targetX,k),lerp(0.8,0.3,k)+Math.sin(k*Math.PI)*h,lerp(9.2,targetZ,k))});
       }
-    } else if(ballPhase==="outcome"||ballPhase==="celebrate"){
-      if(lastResult==="W"){r.stumpsNear.children.forEach((s,i)=>{s.position.y=0.2+Math.random()*0.1;s.rotation.z=(Math.random()-0.5)*1.2})}
     } else if(ballPhase==="idle"){
-      /* Reset stumps and bat */
-      bat.rotation.z=-0.2;r.stumpsNear.children.forEach((s,i)=>{if(i<3){s.rotation.z=0;s.position.y=0.55}});r.trailMat.opacity=0;
+      r.stumpsNear.children.forEach((s,i)=>{if(i<3){s.rotation.z=0;s.position.y=0.55}});r.trailMat.opacity=0;
     }
   },[ballPhase,phaseId,lastResult,shotAngle]);
 
