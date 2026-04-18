@@ -10,7 +10,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Quicksand:wght@400;600;700&family=Russo+One&family=Staatliches&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#060a10;--card:rgba(17,24,39,0.5);--card2:rgba(15,25,35,0.6);--border:rgba(55,65,81,0.2);--win:#22c55e;--lose:#ef4444;--gold:#fbbf24}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -51,6 +51,54 @@ input,select,button{font-family:'Quicksand',sans-serif}
 .game-btn{padding:12px 24px;border-radius:12px;font-weight:700;font-size:15px;border:2px solid rgba(255,255,255,0.15);cursor:pointer;transition:all 0.2s;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px}
 .game-btn:hover{transform:scale(1.05);filter:brightness(1.2)}
 .game-btn:active{transform:scale(0.95)}
+
+/* === GAME-FEEL UPLIFT === */
+.hdisplay{font-family:'Bebas Neue','Oswald',sans-serif;letter-spacing:2px;text-transform:uppercase}
+.himpact{font-family:'Russo One','Oswald',sans-serif;letter-spacing:2px;text-transform:uppercase}
+.hstencil{font-family:'Staatliches','Oswald',sans-serif;letter-spacing:3px;text-transform:uppercase}
+.mega-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.2rem,14vw,8rem);line-height:0.85;letter-spacing:4px;text-transform:uppercase;color:#fff;text-shadow:0 2px 0 #bbb,0 4px 0 #999,0 6px 0 #777,0 8px 0 #555,0 10px 24px rgba(0,0,0,0.9),0 0 60px rgba(59,130,246,0.25)}
+.mega-sub{font-family:'Russo One',sans-serif;font-size:clamp(1.1rem,3vw,2rem);letter-spacing:8px;color:#fde68a;text-shadow:0 0 12px rgba(251,191,36,0.5),0 2px 4px rgba(0,0,0,0.8)}
+.gh-bg{position:relative;background:radial-gradient(ellipse at 50% 115%,rgba(34,197,94,0.22) 0%,transparent 55%),radial-gradient(ellipse at 50% -10%,rgba(250,204,21,0.1) 0%,transparent 55%),linear-gradient(180deg,#020617 0%,#0a1728 55%,#020617 100%)}
+.gh-bg::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,0.06) 1px,transparent 0);background-size:36px 36px;mask-image:linear-gradient(180deg,transparent,rgba(0,0,0,0.7),transparent)}
+.gh-bg::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,0.02) 0,transparent 2px,transparent 4px);mix-blend-mode:overlay}
+.hud{position:relative;background:linear-gradient(180deg,rgba(18,28,45,0.85),rgba(8,14,24,0.95));border:1px solid rgba(148,163,184,0.12);border-radius:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.08),inset 0 -1px 0 rgba(0,0,0,0.6),0 12px 28px rgba(0,0,0,0.55);overflow:hidden}
+.hud-head{padding:10px 14px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:rgba(255,255,255,0.75);background:linear-gradient(180deg,rgba(255,255,255,0.05),transparent 60%);border-bottom:1px solid rgba(255,255,255,0.06)}
+.hud-head .dot{display:inline-block;width:8px;height:8px;border-radius:999px;background:#22c55e;margin-right:8px;box-shadow:0 0 10px #22c55e}
+.panel-tape{position:absolute;top:-1px;right:14px;padding:2px 10px;font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:#0a1728;background:#fde047;clip-path:polygon(8% 0,100% 0,92% 100%,0 100%);text-transform:uppercase}
+.arcade-btn{position:relative;display:inline-block;padding:14px 28px;font-family:'Russo One','Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;text-transform:uppercase;border:none;border-radius:12px;color:#fff;cursor:pointer;transition:transform 0.08s,filter 0.2s;box-shadow:inset 0 2px 0 rgba(255,255,255,0.35),inset 0 -4px 0 rgba(0,0,0,0.45),0 6px 0 rgba(0,0,0,0.55),0 14px 30px rgba(0,0,0,0.5);text-shadow:0 2px 6px rgba(0,0,0,0.55)}
+.arcade-btn:hover{filter:brightness(1.15) saturate(1.1)}
+.arcade-btn:active{transform:translateY(4px);box-shadow:inset 0 2px 0 rgba(255,255,255,0.2),inset 0 -2px 0 rgba(0,0,0,0.4),0 2px 0 rgba(0,0,0,0.5),0 4px 10px rgba(0,0,0,0.3)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.04)}
+.led{font-family:'Bebas Neue',sans-serif;color:#fde047;text-shadow:0 0 10px rgba(250,204,21,0.6),0 0 30px rgba(250,204,21,0.3),0 2px 0 rgba(0,0,0,0.8)}
+.led-score{font-size:clamp(3rem,9vw,5.5rem);line-height:0.9;letter-spacing:-2px}
+.led-label{font-size:12px;letter-spacing:4px;color:#fde68a;text-shadow:0 0 8px rgba(250,204,21,0.5)}
+.scoreboard-frame{position:relative;padding:18px 20px;background:linear-gradient(180deg,#0b1220 0%,#1a2637 50%,#0b1220 100%);border:1px solid rgba(148,163,184,0.18);border-radius:18px;box-shadow:inset 0 2px 0 rgba(255,255,255,0.08),inset 0 -4px 0 rgba(0,0,0,0.6),0 12px 40px rgba(0,0,0,0.7);overflow:hidden}
+.scoreboard-frame::before{content:"";position:absolute;inset:0;background-image:radial-gradient(circle at 1.5px 1.5px,rgba(255,255,255,0.04) 1.2px,transparent 0);background-size:8px 8px;pointer-events:none}
+.scoreboard-frame::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(250,204,21,0.04));pointer-events:none}
+.crest{position:relative;display:inline-flex;align-items:center;justify-content:center;width:64px;height:72px;background:var(--tc,#3b82f6);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);box-shadow:0 6px 20px rgba(0,0,0,0.6);font-family:'Russo One',sans-serif;font-size:28px;letter-spacing:1px;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.7)}
+.crest::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.18),transparent 45%,rgba(0,0,0,0.45));clip-path:inherit}
+.crest>*{position:relative;z-index:1}
+.crest-sm{width:44px;height:50px;font-size:20px}
+.stripes-bg{background:repeating-linear-gradient(-45deg,rgba(255,255,255,0.04) 0,rgba(255,255,255,0.04) 6px,transparent 6px,transparent 14px)}
+.stamp-big{font-family:'Staatliches',sans-serif;font-size:clamp(4rem,18vw,11rem);line-height:0.85;letter-spacing:6px;text-transform:uppercase;color:#fff;text-shadow:0 0 30px currentColor,0 0 80px currentColor,0 8px 0 rgba(0,0,0,0.6),0 16px 40px rgba(0,0,0,0.9);-webkit-text-stroke:2px rgba(0,0,0,0.3)}
+.moment-takeover{position:fixed;inset:0;z-index:60;pointer-events:none;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.9) 80%)}
+.moment-takeover::before{content:"";position:absolute;inset:0;background:repeating-conic-gradient(from 0deg at center,rgba(255,255,255,0.06) 0deg 8deg,transparent 8deg 16deg);animation:spin-slow 14s linear infinite;opacity:0.5;mix-blend-mode:overlay}
+@keyframes spin-slow{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes sparks{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-120px) scale(0.4);opacity:0}}
+.spark{position:absolute;width:6px;height:6px;border-radius:999px;background:#fde047;box-shadow:0 0 10px #fde047;animation:sparks 1.2s ease-out forwards}
+.crowd-strip{position:absolute;left:0;right:0;bottom:0;height:60px;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 60' preserveAspectRatio='none'><g fill='%23000'><circle cx='20' cy='40' r='10'/><circle cx='50' cy='38' r='11'/><circle cx='80' cy='42' r='9'/><circle cx='110' cy='36' r='12'/><circle cx='140' cy='40' r='10'/><circle cx='170' cy='42' r='9'/><circle cx='200' cy='37' r='11'/><circle cx='230' cy='40' r='10'/><circle cx='260' cy='39' r='10'/><circle cx='290' cy='41' r='9'/><circle cx='320' cy='36' r='12'/><circle cx='350' cy='40' r='10'/><circle cx='380' cy='42' r='9'/><circle cx='410' cy='38' r='11'/><circle cx='440' cy='40' r='10'/><circle cx='470' cy='37' r='11'/><circle cx='500' cy='41' r='9'/><circle cx='530' cy='39' r='10'/><circle cx='560' cy='42' r='9'/><circle cx='590' cy='36' r='12'/><circle cx='620' cy='40' r='10'/><circle cx='650' cy='42' r='9'/><circle cx='680' cy='38' r='11'/><circle cx='710' cy='40' r='10'/><circle cx='740' cy='37' r='11'/><circle cx='770' cy='41' r='9'/><circle cx='800' cy='39' r='10'/><circle cx='830' cy='42' r='9'/><circle cx='860' cy='36' r='12'/><circle cx='890' cy='40' r='10'/><circle cx='920' cy='42' r='9'/><circle cx='950' cy='38' r='11'/><circle cx='980' cy='40' r='10'/><circle cx='1010' cy='37' r='11'/><circle cx='1040' cy='41' r='9'/><circle cx='1070' cy='39' r='10'/><circle cx='1100' cy='42' r='9'/><circle cx='1130' cy='36' r='12'/><circle cx='1160' cy='40' r='10'/><rect y='46' width='1200' height='14'/></g></svg>");background-repeat:repeat-x;background-size:auto 100%;opacity:0.7}
+.ticker-wrap{overflow:hidden;white-space:nowrap;position:relative}
+.ticker-move{display:inline-block;animation:tick 45s linear infinite;padding-left:100%}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+.flash-moment{animation:flash-moment 0.5s cubic-bezier(.2,1.6,.3,1)}
+@keyframes flash-moment{0%{opacity:0;transform:scale(0.3) rotate(-6deg)}55%{opacity:1;transform:scale(1.15) rotate(1deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+.rope{background:linear-gradient(180deg,rgba(239,68,68,0.9),rgba(185,28,28,0.9));box-shadow:inset 0 2px 0 rgba(255,255,255,0.3),inset 0 -2px 0 rgba(0,0,0,0.3);height:8px;border-radius:4px}
+.tile-divider{height:2px;background:linear-gradient(90deg,transparent,rgba(250,204,21,0.45),transparent)}
+.pitch-glow{box-shadow:0 0 40px rgba(34,197,94,0.25),0 0 80px rgba(34,197,94,0.15),inset 0 0 60px rgba(0,0,0,0.5)}
+.segment-tab{position:relative;padding:10px 16px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.45);transition:color 0.2s}
+.segment-tab:hover{color:rgba(255,255,255,0.85)}
+.segment-tab.active{color:#fde047;text-shadow:0 0 12px rgba(250,204,21,0.45)}
+.segment-tab.active::after{content:"";position:absolute;left:10%;right:10%;bottom:0;height:3px;background:linear-gradient(90deg,transparent,#fde047,transparent);box-shadow:0 0 12px #fde047}
 </style>
 </head>
 <body>
@@ -570,7 +618,7 @@ const Btn=({children,onClick,cl:color="#3b82f6",sz="md",disabled,full,className=
   const sizes={sm:"px-4 py-2 text-xs",md:"px-6 py-3 text-sm",lg:"px-10 py-4 text-base"};
   return <button onClick={e=>{SFX.uiClick();onClick&&onClick(e)}} disabled={disabled} className={"rounded-xl font-bold gf tracking-wide transition-all duration-200 "+sizes[sz]+(full?" w-full":"")+(disabled?" opacity-40 cursor-not-allowed":" hover:scale-105 hover:brightness-110 active:scale-95")+(pulse?" float-anim":"")+" "+className} style={{background:"linear-gradient(135deg,"+color+","+color+"cc)",color:"#fff",border:"2px solid rgba(255,255,255,0.15)",boxShadow:"0 4px 15px "+color+"40",textTransform:"uppercase",letterSpacing:"1px"}}>{children}</button>};
 const Card=({children,className="",glow,onClick,style={}})=>
-  <div onClick={onClick} className={"rounded-xl p-4 backdrop-blur-sm border transition-all duration-300 "+(onClick?"cursor-pointer hover:scale-[1.02] ":"")+(glow?"border-opacity-50 ":"border-gray-700/30 ")+className} style={{background:"linear-gradient(135deg,rgba(17,24,39,0.7),rgba(10,15,25,0.8))",borderColor:glow||"rgba(55,65,81,0.3)",boxShadow:glow?"0 0 20px "+glow:"none",...style}}>{children}</div>;
+  <div onClick={onClick} className={"hud p-4 transition-all duration-300 "+(onClick?"cursor-pointer hover:scale-[1.02] ":"")+className} style={{borderColor:glow||"rgba(148,163,184,0.15)",boxShadow:glow?"inset 0 1px 0 rgba(255,255,255,0.08),0 10px 28px rgba(0,0,0,0.55),0 0 24px "+glow:null,...style}}>{children}</div>;
 const Modal=({children,onClose,title,wide})=>
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{background:"rgba(0,0,0,0.85)"}} onClick={onClose}>
     <div className={"bg-gray-900 rounded-2xl border border-gray-700/50 max-h-[90vh] overflow-y-auto hide-sb slide-up "+(wide?"w-full max-w-4xl":"w-full max-w-lg")} onClick={e=>e.stopPropagation()}>
@@ -640,43 +688,59 @@ const LEAGUE_META={
 };
 const TitleScreen=({onNew,onLoad,canLoad})=>{
   useEffect(()=>{let c=true;(async()=>{await MUSIC.init();await SFX.init();if(c)MUSIC.play("menu")})();return()=>{c=false}},[]);
-  return <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
-    <div className="absolute inset-0" style={{background:"radial-gradient(ellipse at 50% 30%, rgba(59,130,246,0.18) 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, rgba(139,92,246,0.12) 0%, transparent 50%)"}}/>
-    <div className="absolute inset-0 opacity-20" style={{background:"repeating-linear-gradient(45deg,transparent 0,transparent 40px,rgba(255,255,255,0.02) 40px,rgba(255,255,255,0.02) 41px)"}}/>
-    <div className="relative z-10 text-center slide-up">
-      <div className="mb-2 text-6xl float-anim">&#x1F3CF;</div>
-      <h1 className="text-5xl md:text-7xl font-bold gf mb-2" style={{background:"linear-gradient(135deg,#3b82f6,#8b5cf6,#ec4899)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>CRICKET</h1>
-      <h2 className="text-3xl md:text-4xl font-bold gf text-white mb-1">MANAGER 2026</h2>
-      <div className="text-sm text-gray-400 mb-1 tracking-widest gf">FANTASY LEAGUES EDITION</div>
-      <div className="text-[10px] text-gray-500 mb-8 tracking-wider">Powered by the Dugout Engine v4</div>
-      <div className="flex flex-col gap-3 w-72 mx-auto">
-        <Btn onClick={async()=>{await MUSIC.init();await SFX.init();SFX.startCrowd();MUSIC.stop();onNew()}} cl="#3b82f6" sz="lg" full pulse>New Career</Btn>
-        {canLoad&&<Btn onClick={async()=>{await MUSIC.init();await SFX.init();SFX.startCrowd();MUSIC.stop();onLoad()}} cl="#6b7280" sz="lg" full>Continue Career</Btn>}
+  const [press,setPress]=useState(true);
+  useEffect(()=>{const t=setInterval(()=>setPress(p=>!p),700);return()=>clearInterval(t)},[]);
+  return <div className="min-h-screen gh-bg flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    {/* Stadium spotlights */}
+    <div className="absolute inset-0 pointer-events-none" style={{background:"conic-gradient(from 210deg at 20% -20%, rgba(99,162,255,0.12), transparent 40%),conic-gradient(from 330deg at 80% -20%, rgba(251,191,36,0.12), transparent 40%)"}}/>
+    {/* Floating balls */}
+    {[...Array(6)].map((_,i)=><div key={i} className="absolute float-anim" style={{left:10+i*15+"%",top:12+(i%3)*22+"%",animationDelay:i*0.4+"s",opacity:0.15}}><div style={{width:28+i*4,height:28+i*4,borderRadius:"50%",background:"radial-gradient(circle at 30% 30%, #ef4444, #7f1d1d)",boxShadow:"0 0 30px rgba(239,68,68,0.4)",border:"1px solid rgba(255,255,255,0.15)"}}/></div>)}
+    <div className="relative z-10 text-center slide-up max-w-3xl">
+      <div className="inline-block mb-4 px-4 py-1 chip" style={{borderColor:"#fde04766",background:"rgba(250,204,21,0.08)",color:"#fde047"}}>SEASON 2026 NOW LIVE</div>
+      <div className="mega-title mb-2">Cricket</div>
+      <div className="mega-title mb-4" style={{color:"#fde047",textShadow:"0 2px 0 #92400e,0 4px 0 #78350f,0 6px 0 #64220a,0 10px 30px rgba(250,204,21,0.4),0 0 60px rgba(250,204,21,0.35)"}}>Manager</div>
+      <div className="mega-sub mb-8">2026 &middot; Fantasy Leagues</div>
+      <div className="flex flex-col items-center gap-4 w-full">
+        <button onClick={async()=>{await MUSIC.init();await SFX.init();SFX.startCrowd();MUSIC.stop();onNew()}} className="arcade-btn" style={{background:"linear-gradient(180deg,#f59e0b,#b45309)",opacity:press?1:0.85}}>&#x1F3CF;&nbsp;&nbsp;PRESS START - NEW CAREER</button>
+        {canLoad&&<button onClick={async()=>{await MUSIC.init();await SFX.init();SFX.startCrowd();MUSIC.stop();onLoad()}} className="arcade-btn" style={{background:"linear-gradient(180deg,#3b82f6,#1d4ed8)"}}>CONTINUE CAREER</button>}
       </div>
-      <div className="mt-8 text-xs text-gray-500 gf">8 FANTASY LEAGUES &bull; 48 CLUBS &bull; 864 PLAYERS &bull; FULL SEASONS</div>
-      <div className="mt-2 text-[10px] text-gray-600 gf tracking-wide">IPL &bull; PSL &bull; BBL &bull; SA20 &bull; THE HUNDRED &bull; CPL &bull; LPL &bull; SUPER SMASH</div>
-    </div></div>};
+      <div className="mt-10 flex flex-wrap gap-2 justify-center">
+        {["IPL","PSL","BBL","SA20","THE HUNDRED","CPL","LPL","SUPER SMASH"].map(l=><span key={l} className="chip hdisplay" style={{color:"#cbd5e1"}}>{l}</span>)}
+      </div>
+      <div className="mt-8 text-[11px] text-gray-500 hdisplay tracking-[6px]">8 LEAGUES &middot; 48 CLUBS &middot; 864 PLAYERS</div>
+      <div className="mt-1 text-[10px] text-gray-600 tracking-[4px]">POWERED BY THE DUGOUT ENGINE v4</div>
+    </div>
+    <div className="crowd-strip"/>
+  </div>};
 
 const CountrySelect=({onSelect})=>{
   const ordered=[...COUNTRIES].sort((a,b)=>{const pr=["IPL","PSL","BBL","The Hundred","SA20","CPL","Super Smash","LPL"];return pr.indexOf(a.league)-pr.indexOf(b.league)});
-  return <div className="min-h-screen p-6 flex flex-col items-center">
-    <div className="w-full max-w-5xl pt-4">
-      <h1 className="text-4xl font-bold gf mb-1 text-center slide-up" style={{background:"linear-gradient(135deg,#fbbf24,#f97316,#ec4899)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>CHOOSE YOUR LEAGUE</h1>
-      <p className="text-gray-400 text-sm mb-8 text-center">Eight premium T20 leagues. Pick the world you want to dominate.</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  return <div className="min-h-screen gh-bg relative">
+    <div className="relative max-w-6xl mx-auto px-5 pt-10 pb-16">
+      <div className="text-center slide-up mb-10">
+        <div className="chip hdisplay mb-4" style={{color:"#fde047",borderColor:"#fde04744",background:"rgba(250,204,21,0.08)"}}>&#x1F3C6; STEP 1 OF 3</div>
+        <h1 className="mega-title" style={{fontSize:"clamp(2.6rem,9vw,5rem)",marginBottom:"0.3rem"}}>Pick your league</h1>
+        <p className="mega-sub" style={{fontSize:"clamp(0.9rem,2vw,1.2rem)",letterSpacing:"4px"}}>Eight worlds. One manager. Pick your arena.</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {ordered.map((c,i)=>{const m=LEAGUE_META[c.league]||{tag:c.name,hero:"#3b82f6",blurb:"",emoji:c.flag};
-          return <Card key={c.id} onClick={()=>onSelect(c.id)} glow={m.hero+"66"} className="hover:scale-[1.02] slide-up relative overflow-hidden" style={{animationDelay:i*0.05+"s",borderColor:m.hero+"66"}}>
-            <div className="absolute inset-0 opacity-10" style={{background:"radial-gradient(circle at 85% 15%,"+m.hero+" 0%, transparent 60%)"}}/>
-            <div className="relative flex items-center gap-4">
-              <div className="text-5xl">{c.flag}</div>
-              <div className="flex-1">
-                <div className="text-xs gf tracking-widest" style={{color:m.hero}}>{m.emoji} {c.league}</div>
-                <div className="font-bold gf text-xl text-white">{m.tag}</div>
-                <div className="text-[11px] text-gray-400 italic mt-1">{m.blurb}</div>
-                <div className="mt-2 flex gap-2 flex-wrap"><Badge text={c.clubs.length+" franchises"} cl={m.hero} small/><Badge text={c.name} cl="#6b7280" small/></div>
+          return <div key={c.id} onClick={()=>onSelect(c.id)} className="relative cursor-pointer slide-up group" style={{animationDelay:i*0.04+"s"}}>
+            <div className="hud stripes-bg" style={{padding:0}}>
+              <div className="p-5 flex items-center gap-4 relative overflow-hidden transition-transform group-hover:scale-[1.01]">
+                <div className="absolute inset-0 opacity-25 transition-opacity group-hover:opacity-40" style={{background:"radial-gradient(ellipse at 85% 0%,"+m.hero+" 0%, transparent 55%),linear-gradient(90deg,"+m.hero+"22,transparent 60%)"}}/>
+                <div className="absolute right-0 top-0 bottom-0 w-24 pointer-events-none" style={{background:"linear-gradient(270deg,"+m.hero+"33,transparent)"}}/>
+                <div className="text-6xl relative drop-shadow-lg">{c.flag}</div>
+                <div className="flex-1 relative">
+                  <div className="hdisplay text-[12px]" style={{color:m.hero,letterSpacing:"4px"}}>{m.emoji} {c.league}</div>
+                  <div className="himpact text-2xl md:text-3xl text-white leading-tight mt-0.5">{m.tag}</div>
+                  <div className="text-[12px] text-gray-400 italic mt-1">{m.blurb}</div>
+                  <div className="mt-3 flex gap-2 flex-wrap"><span className="chip hdisplay" style={{color:m.hero,borderColor:m.hero+"55",background:m.hero+"10"}}>{c.clubs.length} FRANCHISES</span><span className="chip hdisplay" style={{color:"#cbd5e1"}}>{c.name}</span></div>
+                </div>
+                <div className="relative hdisplay text-[10px] tracking-[4px]" style={{color:m.hero}}>SELECT &rarr;</div>
               </div>
+              <div className="panel-tape" style={{background:m.hero,color:"#0a1728"}}>#{i+1}</div>
             </div>
-          </Card>})}
+          </div>})}
       </div>
     </div></div>};
 
@@ -805,13 +869,30 @@ const Dashboard=({gs,setGs,setPh,selP,setSelP})=>{
   const fx=gs.fixtures||[];const nextF=fx.find(f=>!f.played&&(f.home===gs.myClub||f.away===gs.myClub));const st=gs.standings||{};const myS=st[gs.myClub]||{w:0,l:0,pts:0};
   const round=nextF?nextF.round:1;
   const tabs=[{id:"home",label:"Home",icon:"\u{1F3E0}"},{id:"squad",label:"Squad",icon:"\u{1F465}"},{id:"tactics",label:"Tactics",icon:"\u{2699}\u{FE0F}"},{id:"training",label:"Training",icon:"\u{1F4AA}"},{id:"fixtures",label:"Fixtures",icon:"\u{1F4C5}"},{id:"table",label:"Table",icon:"\u{1F4CA}"},{id:"stats",label:"Stats",icon:"\u2B50"},{id:"search",label:"Search",icon:"\u{1F50D}"},{id:"trophy",label:"Trophy Room",icon:"\u{1F3C6}"}];
-  return <div className="min-h-screen">
-    <div className="sticky top-0 z-40 p-3 border-b border-gray-700/30" style={{background:"rgba(6,10,16,0.95)",backdropFilter:"blur(10px)"}}>
-      <div className="flex items-center gap-3 mb-3 max-w-5xl mx-auto">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold gf text-sm" style={{background:myClub?.cl+"22",color:myClub?.cl}}>{myClub?.nm?.charAt(0)}</div>
-        <div className="flex-1"><div className="font-bold text-sm gf" style={{color:myClub?.cl}}>{myClub?.nm}</div><div className="text-[10px] text-gray-400">Season {gs.season} | Round {round}</div></div>
-        <div className="text-right"><div className="text-xs text-gray-400">Record</div><div className="text-sm font-bold"><span className="text-green-400">{myS.w}W</span> <span className="text-red-400">{myS.l}L</span></div></div></div>
-      <Tabs tabs={tabs} active={tab} onChange={setTab}/></div>
+  return <div className="min-h-screen gh-bg">
+    {/* Hero header - stadium banner with club crest */}
+    <div className="sticky top-0 z-40 relative" style={{background:"linear-gradient(180deg,"+(myClub?.cl||"#1e3a5f")+"33,rgba(2,6,23,0.9) 55%,rgba(2,6,23,0.95))",borderBottom:"1px solid rgba(250,204,21,0.2)"}}>
+      <div className="absolute inset-0 stripes-bg opacity-50 pointer-events-none"/>
+      <div className="relative max-w-5xl mx-auto px-4 py-3 flex items-center gap-4">
+        <div className="crest crest-sm" style={{"--tc":myClub?.cl||"#3b82f6"}}>{myClub?.nm?.charAt(0)}</div>
+        <div className="flex-1 min-w-0">
+          <div className="hdisplay text-[10px] tracking-[4px] text-gray-400">MANAGING</div>
+          <div className="himpact text-lg md:text-xl truncate" style={{color:myClub?.cl||"#fff"}}>{myClub?.nm||"\u2014"}</div>
+          <div className="hdisplay text-[10px] tracking-[3px] text-gray-400">SEASON {gs.season} &middot; ROUND {round}</div>
+        </div>
+        <div className="text-right">
+          <div className="led-label">RECORD</div>
+          <div className="led" style={{fontSize:"1.6rem",letterSpacing:"0"}}><span style={{color:"#22c55e"}}>{myS.w}</span> <span className="text-gray-500 mx-1 text-sm">-</span> <span style={{color:"#ef4444"}}>{myS.l}</span></div>
+        </div>
+      </div>
+      {/* Segmented tabs */}
+      <div className="relative max-w-5xl mx-auto px-2 pb-1 overflow-x-auto hide-sb">
+        <div className="flex items-center gap-1">
+          {tabs.map(t=><button key={t.id} onClick={()=>{SFX.uiClick();setTab(t.id)}} className={"segment-tab "+(tab===t.id?"active":"")}>{t.icon&&<span className="mr-1 text-base align-middle">{t.icon}</span>}{t.label}</button>)}
+        </div>
+      </div>
+      <div className="tile-divider"/>
+    </div>
     <div className="max-w-5xl mx-auto p-4">
       {tab==="home"&&<HomeTab gs={gs} myClub={myClub} nextF={nextF} myS={myS} mySq={mySq} clubMap={clubMap} allClubs={allClubs} setPh={setPh} setGs={setGs}/>}
       {tab==="squad"&&<SquadTab mySq={mySq} gs={gs} setGs={setGs} myClub={myClub} setSelP={setSelP}/>}
@@ -831,15 +912,34 @@ const HomeTab=({gs,myClub,nextF,myS,mySq,clubMap,allClubs,setPh})=>{
   const headlines=useMemo(()=>{const list=[];for(let i=0;i<4;i++){list.push(genNews(gs,myClub?.nm||"The club",league))}return list},[gs.season,nextF?.id,myClub?.id]);
   const board=gs.board||60;const rep=gs.rep||50;const streak=gs.streak||0;
   return <div className="space-y-4 slide-up">
-    {nextF&&opp&&<Card glow={(isDerby?"#ef4444":myClub?.cl)+"66"}>
-      <div className="flex items-center justify-between mb-2"><div className="text-xs text-gray-400 gf tracking-wide">NEXT MATCH - ROUND {nextF.round}</div>
-      {isDerby&&<Badge text="\u2694 DERBY" cl="#ef4444" small/>}</div>
-      <div className="flex items-center justify-between">
-        <div className="text-center flex-1"><div className="w-14 h-14 rounded-xl mx-auto flex items-center justify-center font-bold gf text-xl" style={{background:myClub?.cl+"22",color:myClub?.cl,border:"2px solid "+myClub?.cl+"44"}}>{myClub?.nm?.charAt(0)}</div><div className="text-sm font-bold mt-2 gf" style={{color:myClub?.cl}}>{myClub?.nm}</div></div>
-        <div className="text-center px-4"><div className="text-2xl font-bold gf text-gray-500">VS</div><div className="text-[10px] text-gray-500 mt-1">{opp.std}</div></div>
-        <div className="text-center flex-1"><div className="w-14 h-14 rounded-xl mx-auto flex items-center justify-center font-bold gf text-xl" style={{background:opp.cl+"22",color:opp.cl,border:"2px solid "+opp.cl+"44"}}>{opp.nm.charAt(0)}</div><div className="text-sm font-bold mt-2 gf" style={{color:opp.cl}}>{opp.nm}</div></div></div>
-      <div className="mt-4"><Btn onClick={()=>setPh("prematch")} cl={myClub?.cl} sz="lg" full pulse>Play Match</Btn></div>
-    </Card>}
+    {nextF&&opp&&<div className="hud relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none" style={{background:"linear-gradient(90deg,"+(myClub?.cl||"#3b82f6")+"2a,transparent 40%,transparent 60%,"+opp.cl+"2a)"}}/>
+      <div className="absolute inset-y-0 left-1/2 w-px" style={{background:"linear-gradient(180deg,transparent,rgba(250,204,21,0.45),transparent)"}}/>
+      <div className="panel-tape">{isDerby?"\u2694 DERBY":"MATCH DAY"}</div>
+      <div className="relative p-5">
+        <div className="hdisplay text-[11px] tracking-[4px] text-gray-400 mb-3 text-center">NEXT FIXTURE &middot; ROUND {nextF.round} &middot; {opp.std}</div>
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-center flex-1">
+            <div className="crest mx-auto" style={{"--tc":myClub?.cl||"#3b82f6"}}>{myClub?.nm?.charAt(0)}</div>
+            <div className="himpact text-sm md:text-base mt-2" style={{color:myClub?.cl}}>{myClub?.nm}</div>
+            <div className="hdisplay text-[10px] tracking-[3px] text-gray-500">HOME</div>
+          </div>
+          <div className="text-center px-2">
+            <div className="hstencil text-4xl md:text-5xl" style={{color:"#fde047",textShadow:"0 0 20px rgba(250,204,21,0.4),0 2px 0 #000"}}>VS</div>
+            {isDerby&&<div className="chip hdisplay mt-2" style={{color:"#ef4444",borderColor:"#ef4444",background:"rgba(239,68,68,0.15)",animation:"glow-pulse 1.5s infinite"}}>&#x2694;&nbsp;DERBY</div>}
+          </div>
+          <div className="text-center flex-1">
+            <div className="crest mx-auto" style={{"--tc":opp.cl}}>{opp.nm.charAt(0)}</div>
+            <div className="himpact text-sm md:text-base mt-2" style={{color:opp.cl}}>{opp.nm}</div>
+            <div className="hdisplay text-[10px] tracking-[3px] text-gray-500">AWAY</div>
+          </div>
+        </div>
+        <div className="mt-5 flex justify-center">
+          <button onClick={()=>setPh("prematch")} className="arcade-btn" style={{background:"linear-gradient(180deg,"+(myClub?.cl||"#22c55e")+","+(myClub?.cl||"#166534")+"cc)"}}>&#x1F3CF;&nbsp;&nbsp;PLAY MATCH</button>
+        </div>
+      </div>
+      <div className="crowd-strip" style={{opacity:0.4}}/>
+    </div>}
     {!nextF&&<Card><div className="text-center py-6"><div className="text-4xl mb-3">&#x1F3C6;</div><div className="font-bold gf text-xl">Season Complete!</div><Btn onClick={()=>setPh("seasonend")} cl="#fbbf24" sz="md" className="mt-4">View Results</Btn></div></Card>}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       <Card><div className="text-xs text-gray-400 mb-2 gf">SQUAD OVERVIEW</div>
@@ -1307,30 +1407,48 @@ const MatchScreen=({gs,setGs,setPh,selP,setSelP})=>{
 
   const ph=gPh(Math.floor(ms.balls/6));const stk=ms.batsmen.find(b=>b.onStrike);const nonStk=ms.batsmen.find(b=>!b.onStrike);
 
-  return <div className={"min-h-screen match-bg "+effectClass}>
-    {/* CELEBRATION OVERLAY */}
-    {celebText&&<div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"><div className="text-6xl md:text-8xl font-bold gf out-text" style={{color:celebText==="OUT!"?"#ef4444":"#fbbf24",textShadow:"0 0 40px "+(celebText==="OUT!"?"rgba(239,68,68,0.5)":"rgba(251,191,36,0.5)")}}>{celebText}</div></div>}
-    {/* SCOREBOARD - BIG AND DOMINANT */}
-    <div className="sticky top-0 z-40 border-b border-gray-700/30" style={{background:"linear-gradient(180deg,rgba(6,10,16,0.98),rgba(6,10,16,0.9))"}}>
-      <div className="max-w-5xl mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 flex-1">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold gf" style={{background:team1.club?.cl+"22",color:team1.club?.cl}}>{team1.club?.nm?.charAt(0)}</div>
-            <div><div className="text-xs gf" style={{color:team1.club?.cl}}>{team1.club?.nm}</div>
-              <div className={"text-3xl font-bold gf "+(inn===1?"text-white":"text-gray-400")}>{inn===1?ms.score:(inn1?.score||0)}<span className="text-lg text-gray-500">/{inn===1?ms.wkts:(inn1?.wkts||0)}</span></div>
-              <div className="text-[10px] text-gray-500">({inn===1?ms.overs:(inn1?.overs||"20")} ov)</div></div></div>
-          <div className="text-center">
-            <div className={"text-[10px] px-3 py-1 rounded-full font-bold gf tracking-wider "+(inn===1?"bg-blue-500/20 text-blue-400":"bg-green-500/20 text-green-400")}>{inn===1?"1ST INNINGS":"2ND INNINGS"}</div>
-            <div className={"text-[10px] mt-1 px-3 py-1 rounded-full font-bold gf "+(ph==="pp"?"bg-yellow-500/20 text-yellow-400":ph==="mid"?"bg-blue-500/20 text-blue-400":"bg-red-500/20 text-red-400")}>{ph==="pp"?"POWERPLAY":ph==="mid"?"MIDDLE":"DEATH"}</div>
+  return <div className={"min-h-screen gh-bg relative "+effectClass}>
+    {/* Full-screen celebration takeover */}
+    {celebText&&<div className="moment-takeover">
+      <div className="relative flash-moment text-center">
+        <div className="stamp-big" style={{color:celebText==="OUT!"?"#ef4444":celebText==="SIX!"?"#fde047":celebText==="FIFTY!"?"#22c55e":"#fde047"}}>{celebText}</div>
+        {resultText&&<div className="himpact text-xl md:text-2xl text-white mt-4 max-w-2xl mx-auto px-4" style={{textShadow:"0 2px 8px rgba(0,0,0,0.8)"}}>{resultText}</div>}
+        {/* Sparks */}
+        {celebText!=="OUT!"&&[...Array(14)].map((_,i)=><div key={i} className="spark" style={{left:45+Math.cos(i/14*Math.PI*2)*30+"%",top:50+Math.sin(i/14*Math.PI*2)*10+"%",background:celebText==="SIX!"?"#fde047":"#22c55e",boxShadow:"0 0 10px "+(celebText==="SIX!"?"#fde047":"#22c55e"),animationDelay:(i*0.04)+"s"}}/>)}
+      </div>
+    </div>}
+    {/* BROADCAST SCOREBOARD */}
+    <div className="sticky top-0 z-40" style={{background:"linear-gradient(180deg,rgba(2,6,23,0.98),rgba(2,6,23,0.92))",backdropFilter:"blur(6px)",borderBottom:"2px solid rgba(250,204,21,0.25)"}}>
+      <div className="max-w-5xl mx-auto px-3 py-3">
+        <div className="scoreboard-frame flex items-center gap-3">
+          {/* Team 1 */}
+          <div className="flex items-center gap-3 flex-1 min-w-0 relative z-10">
+            <div className="crest crest-sm" style={{"--tc":team1.club?.cl||"#3b82f6"}}>{team1.club?.nm?.charAt(0)}</div>
+            <div className="min-w-0 flex-1">
+              <div className="hdisplay text-[10px] tracking-[3px] truncate" style={{color:team1.club?.cl}}>{team1.club?.nm}</div>
+              <div className={"led led-score leading-none "+(inn===1?"":"opacity-60")}>{inn===1?ms.score:(inn1?.score||0)}<span className="text-white/40" style={{fontSize:"60%"}}>/{inn===1?ms.wkts:(inn1?.wkts||0)}</span></div>
+              <div className="hdisplay text-[10px] tracking-[3px] text-gray-400">{inn===1?ms.overs:(inn1?.overs||"20")} OV &middot; RR {inn===1?ms.rr:(inn1?.rr||"--")}</div>
+            </div>
           </div>
-          <div className="flex items-center gap-3 flex-1 justify-end">
-            <div className="text-right"><div className="text-xs gf" style={{color:team2.club?.cl}}>{team2.club?.nm}</div>
-              <div className={"text-3xl font-bold gf "+(inn===2?"text-white":"text-gray-400")}>{inn===2?ms.score:"-"}{inn===2&&<span className="text-lg text-gray-500">/{ms.wkts}</span>}</div>
-              {inn===2&&target>0&&<div className="text-[10px] text-yellow-400 font-bold">Need {Math.max(0,target-ms.score)} off {Math.max(0,120-ms.balls)}</div>}</div>
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold gf" style={{background:team2.club?.cl+"22",color:team2.club?.cl}}>{team2.club?.nm?.charAt(0)}</div></div>
-        </div></div></div>
+          {/* Middle - phase tag */}
+          <div className="text-center relative z-10 hidden md:block">
+            <div className="chip hdisplay" style={{color:"#fde047",borderColor:"#fde04744"}}>{inn===1?"1ST INN":"2ND INN"}</div>
+            <div className="mt-1 chip hdisplay" style={{color:ph==="pp"?"#fde047":ph==="mid"?"#60a5fa":"#f87171",borderColor:"currentColor"}}>{ph==="pp"?"POWERPLAY":ph==="mid"?"MIDDLE":"DEATH"}</div>
+          </div>
+          {/* Team 2 */}
+          <div className="flex items-center gap-3 flex-1 min-w-0 justify-end relative z-10">
+            <div className="min-w-0 text-right">
+              <div className="hdisplay text-[10px] tracking-[3px] truncate" style={{color:team2.club?.cl}}>{team2.club?.nm}</div>
+              <div className={"led led-score leading-none "+(inn===2?"":"opacity-60")}>{inn===2?ms.score:"-"}{inn===2&&<span className="text-white/40" style={{fontSize:"60%"}}>/{ms.wkts}</span>}</div>
+              {inn===2&&target>0?<div className="hdisplay text-[10px] tracking-[3px]" style={{color:"#fde047"}}>NEED {Math.max(0,target-ms.score)} OFF {Math.max(0,120-ms.balls)}</div>:<div className="hdisplay text-[10px] tracking-[3px] text-gray-400">TARGET {target||"--"}</div>}
+            </div>
+            <div className="crest crest-sm" style={{"--tc":team2.club?.cl||"#ef4444"}}>{team2.club?.nm?.charAt(0)}</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <div className="max-w-5xl mx-auto p-4 space-y-4">
+    <div className="relative max-w-5xl mx-auto p-4 space-y-4">
       {/* BATSMEN & BOWLER */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Card className="md:col-span-2">
